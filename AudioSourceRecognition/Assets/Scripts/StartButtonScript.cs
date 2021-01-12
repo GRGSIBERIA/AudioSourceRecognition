@@ -7,36 +7,55 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Button))]
 public class StartButtonScript : MonoBehaviour
 {
-    // ƒLƒƒƒbƒVƒ…‰»‚·‚éƒRƒ“ƒ|[ƒlƒ“ƒg
+    [SerializeField]
+    GameObject recorder;
+
+    [SerializeField]
+    GameObject dropdownDevice;
+
+    // ã‚­ãƒ£ãƒƒã‚·ãƒ¥åŒ–ã™ã‚‹ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆ
     Button btn;
     Image img;
     Text text;
+    Dropdown devices;
+    RecordManager sound;
 
-    // ƒgƒOƒ‹ƒ{ƒ^ƒ“‚É‚µ‚½‚¢‚Ì‚Å“s“x”»’è‚ğs‚¤
+    // ãƒˆã‚°ãƒ«ãƒœã‚¿ãƒ³ã«ã—ãŸã„ã®ã§éƒ½åº¦åˆ¤å®šã‚’è¡Œã†
     bool toggle = false;
+
+    /// <summary>
+    /// ãƒ¬ã‚³ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ä¸­ã‹å¦ã‹
+    /// </summary>
+    public bool IsRecording { get { return toggle; } }
 
     // Start is called before the first frame update
     void Start()
     {
-        // ƒRƒ“ƒ|[ƒlƒ“ƒg‚Ì‰Šú‰»ˆ—
+        // ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã®åˆæœŸåŒ–å‡¦ç†
         btn = GetComponent<Button>();
         img = GetComponent<Image>();
         text = transform.GetChild(0).GetComponent<Text>();
+        sound = recorder.GetComponent<RecordManager>();
+        devices = dropdownDevice.GetComponent<Dropdown>();
 
         btn.onClick.AddListener(() =>
         {
             toggle = !toggle;
             var colors = btn.colors;
+            var id = devices.value;
 
+            // æŒ‡å®šã•ã‚ŒãŸãƒã‚¤ã‚¯ã§å®Œçµã™ã‚‹
             if (toggle)
             {
                 img.color = Color.red;
                 text.text = "Stop";
+                sound.StartRecording(devices.options[id].text);
             }
             else
             {
                 img.color = Color.white;
                 text.text = "Start";
+                sound.StopRecording();
             }
         });
     }

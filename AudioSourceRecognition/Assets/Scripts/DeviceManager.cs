@@ -9,7 +9,7 @@ public class DeviceManager : MonoBehaviour
     Dropdown drop;
 
     /// <summary>
-    /// ƒ}ƒCƒN‚Ég‚¦‚éƒfƒoƒCƒXƒŠƒXƒg
+    /// ãƒã‚¤ã‚¯ã«ä½¿ãˆã‚‹ãƒ‡ãƒã‚¤ã‚¹ãƒªã‚¹ãƒˆ
     /// </summary>
     List<Dropdown.OptionData> devices = new List<Dropdown.OptionData>();
 
@@ -27,11 +27,5 @@ public class DeviceManager : MonoBehaviour
         }
 
         drop.options = devices;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
