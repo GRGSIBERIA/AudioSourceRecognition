@@ -38,9 +38,16 @@ public class RecordManager : MonoBehaviour
         
     }
 
-    public void StartRecording(string deviceName)
+    public void StartRecording(string deviceName, int samplingFrequency)
     {
         this.deviceName = deviceName;
+        this.samplingFrequency = samplingFrequency;
+
+        if (this.samplingFrequency <= 0)
+        {
+            Debug.LogError($"Cannot parse sampling frequency. Please over than zero : {this.samplingFrequency}");
+            return;
+        }
 
         sound.clip = Microphone.Start(deviceName, true, bufferingTime, samplingFrequency);
 
