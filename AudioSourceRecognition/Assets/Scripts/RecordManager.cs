@@ -31,6 +31,33 @@ public class RecordManager : MonoBehaviour
         sound = GetComponent<AudioSource>();
         sound.clip = null;
         sound.loop = true;
+        sound.mute = true;
+    }
+
+    /// <summary>
+    /// StartRecording時に初期化
+    /// リングバッファ
+    /// </summary>
+    float[] buffer;
+
+    /// <summary>
+    /// 整列済みのバッファ
+    /// </summary>
+    float[] ordered;
+
+    public float[] GetData()
+    {
+        int position = Microphone.GetPosition(deviceName);  // マイク端の位置だと思う
+
+        sound.clip.GetData(buffer, 0);
+
+        // リングバッファ端の前から端までのコピー
+        System.Array.Copy(buffer, position, ordered, 0, buffer.Length - position);
+
+        // リングバッファの最初からマイク位置までのコピー
+        System.Array.Copy(buffer, 0, ordered, buffer.Length - position, position);
+
+        return ordered;
     }
 
     public void StartRecording(string deviceName, int bufferingTime, int samplingFrequency)
@@ -47,6 +74,8 @@ public class RecordManager : MonoBehaviour
         }
 
         sound.clip = Microphone.Start(deviceName, true, bufferingTime, samplingFrequency);
+        buffer = new float[bufferingTime * samplingFrequency];
+        ordered = new float[buffer.Length];
 
         if (Microphone.GetPosition(deviceName) <= 0) { }
 
