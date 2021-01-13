@@ -43,6 +43,7 @@ public class RecordManager : MonoBehaviour
         this.deviceName = deviceName;
         this.samplingFrequency = samplingFrequency;
 
+        // サンプリングレートが意味不明な場合はエラーメッセージを出す
         if (this.samplingFrequency <= 0)
         {
             Debug.LogError($"Cannot parse sampling frequency. Please over than zero : {this.samplingFrequency}");
