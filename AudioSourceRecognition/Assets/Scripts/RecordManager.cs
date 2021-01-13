@@ -33,16 +33,11 @@ public class RecordManager : MonoBehaviour
         sound.loop = true;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public void StartRecording(string deviceName, int samplingFrequency)
+    public void StartRecording(string deviceName, int bufferingTime, int samplingFrequency)
     {
         this.deviceName = deviceName;
         this.samplingFrequency = samplingFrequency;
+        this.bufferingTime = bufferingTime;
 
         // サンプリングレートが意味不明な場合はエラーメッセージを出す
         if (this.samplingFrequency <= 0)

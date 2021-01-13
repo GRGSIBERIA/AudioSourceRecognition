@@ -2975,7 +2975,7 @@ GameObject:
   - component: {fileID: 1658945269}
   - component: {fileID: 1658945268}
   m_Layer: 5
-  m_Name: UsedChannelText
+  m_Name: BufferingTimeText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3033,7 +3033,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Using Channel
+  m_Text: Buffering Time
 --- !u!222 &1658945269
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3271,7 +3271,7 @@ GameObject:
   - component: {fileID: 1810811458}
   - component: {fileID: 1810811457}
   m_Layer: 5
-  m_Name: ChannelSelectDropdown
+  m_Name: BufferingTimeDropdown
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
