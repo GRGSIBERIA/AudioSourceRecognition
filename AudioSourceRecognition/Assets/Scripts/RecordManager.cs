@@ -30,6 +30,7 @@ public class RecordManager : MonoBehaviour
     {
         sound = GetComponent<AudioSource>();
         sound.clip = null;
+        sound.loop = true;
     }
 
     // Update is called once per frame
@@ -55,6 +56,7 @@ public class RecordManager : MonoBehaviour
         if (Microphone.GetPosition(deviceName) <= 0) { }
 
         sound.Play();
+        Debug.Log("play");
     }
 
     public void StopRecording()

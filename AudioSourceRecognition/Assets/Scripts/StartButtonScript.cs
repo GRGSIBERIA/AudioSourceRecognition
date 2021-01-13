@@ -64,6 +64,13 @@ public class StartButtonScript : MonoBehaviour
 
         btn.onClick.AddListener(() =>
         {
+            // サウンドデバイスを持っていない場合は、エラーメッセージを出して処理を止める
+            if (devices.options == null || devices.options.Count <= 0)
+            {
+                errorMessage.text = "This computer has not Microphone devices.";
+                return;
+            }
+
             var colors = btn.colors;
             var id = devices.value;
 

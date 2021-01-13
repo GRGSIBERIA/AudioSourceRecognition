@@ -347,7 +347,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 48000
+  m_Text: 44100
 --- !u!222 &256322643
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -766,7 +766,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa84d0dd5db4e9546b3de9d15e15fabe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  channelDropdownObject: {fileID: 1810811455}
+  errorMessage: {fileID: 1191361402}
 --- !u!1 &411617228
 GameObject:
   m_ObjectHideFlags: 0
@@ -3490,7 +3490,7 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: 48000
+  m_Text: 44100
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
