@@ -54,7 +54,7 @@ public class WaveformScript : MonoBehaviour
             vertices[i].z = 0f;
         }
     }
-
+    
     // Update is called once per frame
     public void OnRenderObject()
     {
