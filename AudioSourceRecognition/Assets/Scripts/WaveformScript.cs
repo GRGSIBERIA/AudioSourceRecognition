@@ -48,8 +48,8 @@ public class WaveformScript : MonoBehaviour
 
     void CleanAspect(int width, int height)
     {
-        aspectX = 5;
-        aspectY = 5;
+        aspectX = 6;
+        aspectY = 6;
     }
 
     // Update is called once per frame
