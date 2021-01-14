@@ -21,6 +21,11 @@ public class RecordManager : MonoBehaviour
     int bufferingTime = 10;
 
     /// <summary>
+    /// バッファリング秒数とサンプリングレートに対するサンプル数
+    /// </summary>
+    public int NumofSamples { get { return samplingFrequency * bufferingTime; } }
+
+    /// <summary>
     /// デバイス名
     /// </summary>
     string deviceName;
@@ -82,6 +87,11 @@ public class RecordManager : MonoBehaviour
         sound.Play();
         Debug.Log("play");
     }
+
+    /// <summary>
+    /// レコーディング中かどうか返す
+    /// </summary>
+    public bool IsRecording { get { return Microphone.IsRecording(deviceName); } }
 
     public void StopRecording()
     {

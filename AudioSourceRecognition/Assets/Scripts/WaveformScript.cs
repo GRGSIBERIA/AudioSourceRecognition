@@ -2,58 +2,97 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(LineRenderer))]
 public class WaveformScript : MonoBehaviour
 {
-    Material line;
-
     [SerializeField]
     GameObject recordManager;
 
+    LineRenderer line;
     RecordManager recorder;
+
+    Vector3[] vertices;
+
+    bool initialized = false;
+
+    Resolution prevResolution;
 
     // Start is called before the first frame update
     void Start()
     {
         recorder = recordManager.GetComponent<RecordManager>();
+        line = GetComponent<LineRenderer>();
+        line.startWidth = 0.1f;
+        line.endWidth = 0.1f;
+        prevResolution = Screen.currentResolution;
+        CleanAspect(prevResolution);
+    }
 
-        Shader shader = Shader.Find("Hidden/Internal-Colored");
-        line = new Material(shader);
-        line.hideFlags = HideFlags.HideAndDontSave;
-        line.SetInt("_srcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-        line.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-        line.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
-        line.SetInt("_ZWrite", 0);
+    private void Update()
+    {
+        if (recorder.IsRecording && !initialized)
+        {
+            vertices = new Vector3[recorder.NumofSamples];
+            line.positionCount = vertices.Length;
+            initialized = true;
+        }
+    }
+
+    /// <summary>
+    /// ユークリッド互除法
+    /// </summary>
+    /// <param name="x">長辺</param>
+    /// <param name="y">短辺</param>
+    /// <returns>公約数</returns>
+    int gcd(int x, int y)
+    {
+        if (y == 0) return x;
+        return gcd(y, x % y);
+    }
+
+    [SerializeField]
+    float aspectX;
+
+    [SerializeField]
+    float aspectY;
+
+    void CleanAspect(Resolution resolution)
+    {
+        float match = gcd(resolution.width, resolution.height);
+        aspectX = resolution.width / match;
+        aspectY = resolution.height / match;
     }
 
     // Update is called once per frame
     public void OnRenderObject()
     {
+        var resolution = Screen.currentResolution;
+
+        if (!recorder.IsRecording) return;
+
         var waveform = recorder.GetData();
 
-        if (line == null)
+        // 解像度に変更が加えられた場合の処理
+        if (!(prevResolution.width == resolution.width && prevResolution.height == resolution.height))
         {
-            Debug.LogError("Forgets to assign color of material.");
-            return;
+            CleanAspect(resolution);
         }
 
-        line.SetPass(0);
+        float aspect = (float)resolution.width / (float)resolution.height;
+        
+        float offset = aspectY;
+        float xdiff = aspectY * 2f / (float)waveform.Length;
+        float ydiff = (float)aspectX * 0.25f / Mathf.Pow(2f, 24f);
 
-        GL.PushMatrix();
-        GL.MultMatrix(transform.localToWorldMatrix);
-
-        var resolution = Screen.currentResolution;
-        float xdiff = (float)resolution.width / waveform.Length;
-        float ydiff = Mathf.Pow(2, 24) / (float)resolution.height;
-
-        GL.Begin(GL.LINE_STRIP);
         for (int i = 0; i < waveform.Length; ++i)
         {
-            GL.Color(Color.red);
-
-            Vector3 pos = new Vector3(i * xdiff, waveform[i] * ydiff, 0);
-            GL.Vertex(pos);
+            vertices[i].x = i * xdiff - offset;
+            vertices[i].y = waveform[i] * ydiff;
+            vertices[i].z = 0f;
         }
-        GL.End();
-        GL.PopMatrix();
+
+        line.SetPositions(vertices);
+
+        prevResolution = resolution;
     }
 }
