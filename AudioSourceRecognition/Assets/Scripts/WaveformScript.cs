@@ -1,9 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Burst;
-using Unity.Jobs;
-using Unity.Collections;
 
 [RequireComponent(typeof(LineRenderer))]
 public class WaveformScript : MonoBehaviour
@@ -28,7 +25,7 @@ public class WaveformScript : MonoBehaviour
         line = GetComponent<LineRenderer>();
         line.startWidth = 0.01f;
         line.endWidth = 0.01f;
-        aspect = 6f;    // 4:3�ł�����Ȃ��l
+        aspect = 6f;    // 4:3でも乱れない値
     }
 
     private void Update()
@@ -50,6 +47,7 @@ public class WaveformScript : MonoBehaviour
         }
         else if (!recorder.IsRecording && initialized)
         {
+            // レコーディングしてないのに、初期化されているのはおかしい
             initialized = false;
         }
     }
