@@ -3,6 +3,27 @@
 
 #pragma once
 
-#include <iostream>
+#ifdef _MSC_VER
+#pragma warning(disable:4251)
+#endif
 
-// TODO: プログラムに必要な追加ヘッダーをここで参照します。
+#ifdef _WIN32
+#ifdef DLL_BODY
+#define DLL_EXPORT  __declspec(dllexport)
+#else
+#define DLL_EXPORT  __declspec(dllimport)
+#endif
+#else
+#define DLL_EXPORT
+#endif
+
+#define DLL_API extern "C" __declspec(dllexport)
+
+/// <summary>
+/// 複素数型
+/// </summary>
+__declspec(align(16)) struct complex
+{
+	float re;
+	float im;
+};
