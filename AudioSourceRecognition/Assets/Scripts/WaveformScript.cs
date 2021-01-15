@@ -38,23 +38,22 @@ public class WaveformScript : MonoBehaviour
             vertices = new Vector3[recorder.NumofSamples];
             line.positionCount = vertices.Length;
             initialized = true;
+
+            float offset = aspect;
+            float xdiff = aspect * 2f / (float)vertices.Length;
+
+            for (int i = 0; i < vertices.Length; ++i)
+            {
+                vertices[i].x = i * xdiff - offset;
+                vertices[i].z = 0f;
+            }
         }
-    }
-
-    void CollectVertices(float[] waveform)
-    {
-        float offset = aspect;
-        float xdiff = aspect * 2f / (float)waveform.Length;
-        float ydiff = 0.5f;
-
-        for (int i = 0; i < waveform.Length; ++i)
+        else if (!recorder.IsRecording && initialized)
         {
-            vertices[i].x = i * xdiff - offset;
-            vertices[i].y = waveform[i] * ydiff;
-            vertices[i].z = 0f;
+            initialized = false;
         }
     }
-    
+
     // Update is called once per frame
     public void OnRenderObject()
     {
@@ -63,7 +62,12 @@ public class WaveformScript : MonoBehaviour
         if (!recorder.IsRecording) return;
 
         var waveform = recorder.GetData();
-        CollectVertices(waveform);
+
+        float ydiff = 0.5f;
+        for (int i = 0; i < waveform.Length; ++i)
+        {
+            vertices[i].y = waveform[i] * ydiff;
+        }
 
         line.SetPositions(vertices);
     }
