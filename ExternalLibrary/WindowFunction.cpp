@@ -14,6 +14,8 @@ const double pi = acos(-1);
 
 void CheckWindowMemory(int, int, void (*)(int, int));
 void EL_Windowing(float*, int);
+void EL_Hann(int, int);
+void EL_Hamming(int, int);
 
 void CheckWindowMemory(int length, int freq, void (*WF)(int, int))
 {
@@ -68,8 +70,8 @@ void EL_Windowing(float* waveform, int length)
 	}
 }
 
+//-----------------------------------------------------------------------------
 // ハン窓
-void EL_Hann(int, int);
 void EL_Hann(int length, int spfreq)
 {
 	for (int i = 0; i < length; ++i)
@@ -78,20 +80,20 @@ void EL_Hann(int length, int spfreq)
 	}
 }
 
+void EL_UseWindowHann(float* waveform, int length, int spfreq)
+{
+	CheckWindowMemory(length, spfreq, &EL_Hann);
+	EL_Windowing(waveform, length);
+}
+
+//-----------------------------------------------------------------------------
 // ハミング窓
-void EL_Hamming(int, int);
 void EL_Hamming(int length, int spfreq)
 {
 	for (int i = 0; i < length; ++i)
 	{
 		window.get()[i] = 0.54 - 0.46 * cos(2.0 * pi * (i * diff / time));
 	}
-}
-
-void EL_UseWindowHann(float* waveform, int length, int spfreq)
-{
-	CheckWindowMemory(length, spfreq, &EL_Hann);
-	EL_Windowing(waveform, length);
 }
 
 void EL_UseWindowHamming(float* waveform, int length, int spfreq)

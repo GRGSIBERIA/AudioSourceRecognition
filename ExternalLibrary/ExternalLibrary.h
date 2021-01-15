@@ -43,5 +43,3 @@ __declspec(align(16)) struct complex
 };
 
 static std::unique_ptr<float> windowed = nullptr;
-
-DLL_API void EL_UseWindowHann(float* waveform, int length, int samplingFreq);
