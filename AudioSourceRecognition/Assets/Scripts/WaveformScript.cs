@@ -61,7 +61,7 @@ public class WaveformScript : MonoBehaviour
 
         var waveform = recorder.GetData();
 
-        float ydiff = 0.5f;
+        const float ydiff = 0.5f;
         for (int i = 0; i < waveform.Length; ++i)
         {
             vertices[i].y = waveform[i] * ydiff;
