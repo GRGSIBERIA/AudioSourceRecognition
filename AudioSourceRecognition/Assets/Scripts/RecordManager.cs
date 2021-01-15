@@ -52,16 +52,7 @@ public class RecordManager : MonoBehaviour
 
     public float[] GetData()
     {
-        int position = Microphone.GetPosition(deviceName);  // マイク端の位置だと思う
-
-        sound.clip.GetData(buffer, 0);
-
-        // リングバッファ端の前から端までのコピー
-        System.Array.Copy(buffer, position, ordered, 0, buffer.Length - position);
-
-        // リングバッファの最初からマイク位置までのコピー
-        System.Array.Copy(buffer, 0, ordered, buffer.Length - position, position);
-
+        // 整列済みのバッファを返す
         return ordered;
     }
 
@@ -86,6 +77,20 @@ public class RecordManager : MonoBehaviour
 
         sound.Play();
         Debug.Log("play");
+    }
+
+    private void Update()
+    {
+        // アップデートごとにマイクから取得した音源をコピーする
+        int position = Microphone.GetPosition(deviceName);  // マイク端の位置だと思う
+
+        sound.clip.GetData(buffer, 0);
+
+        // リングバッファ端の前から端までのコピー
+        System.Array.Copy(buffer, position, ordered, 0, buffer.Length - position);
+
+        // リングバッファの最初からマイク位置までのコピー
+        System.Array.Copy(buffer, 0, ordered, buffer.Length - position, position);
     }
 
     /// <summary>
