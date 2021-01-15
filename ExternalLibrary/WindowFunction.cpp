@@ -13,6 +13,8 @@ static std::unique_ptr<float> window = nullptr;
 const double pi = acos(-1);
 
 void CheckWindowMemory(int, int, void (*)(int, int));
+void EL_Windowing(float*, int);
+
 void CheckWindowMemory(int length, int freq, void (*WF)(int, int))
 {
 	if (pvLength != length || pvFreq != freq)
@@ -34,7 +36,6 @@ void CheckWindowMemory(int length, int freq, void (*WF)(int, int))
 	}
 }
 
-void EL_Windowing(float*, int);
 void EL_Windowing(float* waveform, int length)
 {
 #if EL_ARCHITECTURE == 8
@@ -52,6 +53,7 @@ void EL_Windowing(float* waveform, int length)
 		__m128 win = _mm_load_ps(&window.get()[i]);
 		__m128 out = _mm_mul_ps(wave, win);
 		_mm_store_ps(&windowed.get()[i], out);
+	}
 #endif
 
 	// —]‚è‚ª‚ ‚éê‡‚Í—]‚è‚Ìˆ—‚ğs‚¤

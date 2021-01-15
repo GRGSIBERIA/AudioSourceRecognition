@@ -27,6 +27,8 @@
 
 #define EL_ARCHITECTURE_AVX 8
 #define EL_ARCHITECTURE_SSE 4
+
+// 定義上はAVXで計算する
 #define EL_ARCHITECTURE EL_ARCHITECTURE_AVX
 
 #include <memory>
