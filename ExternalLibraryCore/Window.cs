@@ -6,7 +6,7 @@ namespace ExternalLibraryCore
 {
     public interface IWindow
     {
-        float[] UseWindowing(float[] waveform, int length);
+        float[] UseWindowing(float[] waveform);
     }
 
     public delegate float WindowFunction(float time);
@@ -27,7 +27,7 @@ namespace ExternalLibraryCore
         private float[] window;
         private float[] windowed;
 
-        public abstract float[] UseWindowing(float[] waveform, int length);
+        public abstract float[] UseWindowing(float[] waveform);
 
         void Initialize(int length, int spfreq)
         {
@@ -41,9 +41,9 @@ namespace ExternalLibraryCore
             this.time = this.diff * this.window.Length;
         }
 
-        protected void CheckLength(float[] waveform, int spfreq)
+        protected void CheckLength(float[] waveform)
         {
-            if (waveform.Length != this.length || this.spfreq != spfreq)
+            if (waveform.Length != this.length)
             {
                 Initialize(waveform.Length, spfreq);
             }
@@ -57,12 +57,11 @@ namespace ExternalLibraryCore
             }
         }
 
-        protected float[] Windowing(float[] waveform, int length)
+        protected float[] Windowing(float[] waveform)
         {
-            CheckLength(waveform, length);
+            CheckLength(waveform);
 
             Vector256<float> wavein;
-            Vector256<float> winin;
             Vector256<float> output;
 
             unsafe
@@ -71,18 +70,18 @@ namespace ExternalLibraryCore
                 {
                     fixed (float* pwavein = &waveform[i])
                     {
-                        wavein = Avx.LoadAlignedVector256(pwavein);
+                        wavein = Avx.LoadVector256(pwavein);
                     }
                     fixed (float* pwinin = &window[i])
                     {
-                        winin = Avx.LoadAlignedVector256(pwinin);
+                        output = Avx.LoadVector256(pwinin);
                     }
 
-                    output = Avx.Multiply(wavein, winin);
+                    output = Avx.Multiply(wavein, output);
 
                     fixed (float* pout = &windowed[i])
                     {
-                        Avx.StoreAligned(pout, output);
+                        Avx.Store(pout, output);
                     }
                 }
             }
@@ -98,14 +97,22 @@ namespace ExternalLibraryCore
         }
     }
 
+    /// <summary>
+    /// ハン窓
+    /// </summary>
     public class HannWindow : AbstractWindow
     {
         public HannWindow(int waveformLength, int samplingFrequency)
             : base(waveformLength, samplingFrequency, Hann) { }
 
-        public override float[] UseWindowing(float[] waveform, int length)
+        /// <summary>
+        /// 波形に窓関数を適用する
+        /// </summary>
+        /// <param name="waveform">波形データ</param>
+        /// <returns>窓かけした波形データ</returns>
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, length);
+            return Windowing(waveform);
         }
 
         static float Hann(float t)
@@ -114,19 +121,124 @@ namespace ExternalLibraryCore
         }
     }
 
+    /// <summary>
+    /// ハミング窓
+    /// </summary>
     public class HammingWindow : AbstractWindow
     {
+        /// <summary>
+        /// ハミング窓
+        /// </summary>
+        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="samplingFrequency">サンプリング周波数</param>
         public HammingWindow(int waveformLength, int samplingFrequency)
             : base(waveformLength, samplingFrequency, Hamming) { }
 
-        public override float[] UseWindowing(float[] waveform, int length)
+        /// <summary>
+        /// 波形に窓関数を適用する
+        /// </summary>
+        /// <param name="waveform">波形データ</param>
+        /// <returns>窓かけした波形データ</returns>
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, length);
+            return Windowing(waveform);
         }
 
         static float Hamming(float t)
         {
             return 0.54f - 0.46f * MathF.Cos(2f * MathF.PI * t);
+        }
+    }
+
+    /// <summary>
+    /// 矩形窓
+    /// </summary>
+    public class RectangleWindow : AbstractWindow
+    {
+        /// <summary>
+        /// 矩形窓
+        /// </summary>
+        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="samplingFrequency">サンプリング周波数</param>
+        public RectangleWindow(int waveformLength, int samplingFrequency)
+            : base(waveformLength, samplingFrequency, Rect) { }
+
+        /// <summary>
+        /// 波形に窓関数を適用する
+        /// </summary>
+        /// <param name="waveform">波形データ</param>
+        /// <returns>窓かけした波形データ</returns>
+        public override float[] UseWindowing(float[] waveform)
+        {
+            return Windowing(waveform);
+        }
+
+        static float Rect(float t)
+        {
+            return 1f;
+        }
+    }
+
+    /// <summary>
+    /// ブラックマン窓
+    /// </summary>
+    public class BlackmanWindow : AbstractWindow
+    {
+        /// <summary>
+        /// ブラックマン窓
+        /// </summary>
+        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="samplingFrequency">サンプリング周波数</param>
+        public BlackmanWindow(int waveformLength, int samplingFrequency)
+            : base(waveformLength, samplingFrequency, Blackman) { }
+
+        /// <summary>
+        /// 波形に窓関数を適用する
+        /// </summary>
+        /// <param name="waveform">波形データ</param>
+        /// <returns>窓かけした波形データ</returns>
+        public override float[] UseWindowing(float[] waveform)
+        {
+            return Windowing(waveform);
+        }
+
+        static float Blackman(float t)
+        {
+            return 0.42f - 
+                0.5f * MathF.Cos(2f * MathF.PI * t) + 
+                0.08f * MathF.Cos(4f * MathF.PI * t);
+        }
+    }
+
+    /// <summary>
+    /// ブラックマン-ハリス窓
+    /// </summary>
+    public class BlackmanHarrisWindow : AbstractWindow
+    {
+        /// <summary>
+        /// ブラックマン-ハリス窓
+        /// </summary>
+        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="samplingFrequency">サンプリング周波数</param>
+        public BlackmanHarrisWindow(int waveformLength, int samplingFrequency)
+            : base(waveformLength, samplingFrequency, BlackmanHarris) { }
+
+        /// <summary>
+        /// 波形に窓関数を適用する
+        /// </summary>
+        /// <param name="waveform">波形データ</param>
+        /// <returns>窓かけした波形データ</returns>
+        public override float[] UseWindowing(float[] waveform)
+        {
+            return Windowing(waveform);
+        }
+
+        static float BlackmanHarris(float t)
+        {
+            return 0.355768f - 
+                0.487396f * MathF.Cos(2f * MathF.PI * t) + 
+                0.144232f * MathF.Cos(4f * MathF.PI * t) -
+                0.012604f * MathF.Cos(6f * MathF.PI * t);
         }
     }
 }
