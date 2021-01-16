@@ -126,7 +126,6 @@ namespace ExternalLibraryCore
                 
                 fixed (complex_t* cp = &input[i])
                 {
-                    
                     z = Sse.UnpackLow(a, z);
                     Sse.Store(&cp[0].re, z);
                     z = Sse.Xor(z, z);
