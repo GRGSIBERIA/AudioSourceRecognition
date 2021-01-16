@@ -24,16 +24,26 @@ namespace ExternalLibraryCore
         private float diff;
         private float time;
 
+        private float[] buffer;
         private float[] window;
         private float[] windowed;
 
+        /// <summary>
+        /// 窓掛け後の長さを返す
+        /// </summary>
+        public int Length { get { return length; } }
+
         public abstract float[] UseWindowing(float[] waveform, int spfreq);
 
-        void Initialize(int length, int spfreq)
+        void Initialize(int N, int spfreq)
         {
             this.spfreq = spfreq;
-            this.block = length / avx;
-            this.length = this.block * avx;
+            int logN = (int)MathF.Log2(N);
+            int powN = (int)MathF.Pow(2f, logN);
+            this.block = powN / avx;
+            this.length = powN;
+
+            this.buffer = new float[this.length];
             this.window = new float[this.length];
             this.windowed = new float[this.length];
 
@@ -43,6 +53,7 @@ namespace ExternalLibraryCore
 
         protected void CheckLength(float[] waveform, int spfreq)
         {
+            // waveformの長さと内部的に保持している長さは一致しない
             if (waveform.Length < this.length || this.spfreq != spfreq)
             {
                 Initialize(waveform.Length, spfreq);
@@ -61,6 +72,9 @@ namespace ExternalLibraryCore
         {
             CheckLength(waveform, spfreq);
 
+            // N点のバッファにコピー
+            Array.Copy(waveform, waveform.Length - this.length, buffer, 0, this.length);
+
             Vector256<float> wavein;
             Vector256<float> output;
 
@@ -68,7 +82,7 @@ namespace ExternalLibraryCore
             {
                 for (int i = 0; i < this.length; i += avx)
                 {
-                    fixed (float* pwavein = &waveform[i])
+                    fixed (float* pwavein = &buffer[i])
                     {
                         wavein = Avx.LoadVector256(pwavein);
                     }
@@ -88,11 +102,11 @@ namespace ExternalLibraryCore
             return windowed;
         }
 
-        public AbstractWindow(int waveformLength,
+        public AbstractWindow(int N,
                                  int samplingFrequency,
                                  WindowFunction wf)
         {
-            Initialize(waveformLength, samplingFrequency);
+            Initialize(N, samplingFrequency);
             CreateWindow(wf);
         }
     }
@@ -102,8 +116,14 @@ namespace ExternalLibraryCore
     /// </summary>
     public class HannWindow : AbstractWindow
     {
-        public HannWindow(int waveformLength, int samplingFrequency)
-            : base(waveformLength, samplingFrequency, Hann) { }
+        /// <summary>
+        /// ハン窓
+        /// </summary>
+        /// <param name="N">波形から切り出すサンプル数</param>
+        /// <param name="samplingFrequency">サンプリング周波数</param>
+        /// <remarks>サンプル数はN=2^Mが保証される</remarks>
+        public HannWindow(int N, int samplingFrequency)
+            : base(N, samplingFrequency, Hann) { }
 
         /// <summary>
         /// 波形に窓関数を適用する
@@ -130,10 +150,11 @@ namespace ExternalLibraryCore
         /// <summary>
         /// ハミング窓
         /// </summary>
-        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="N">波形から切り出すサンプル数</param>
         /// <param name="samplingFrequency">サンプリング周波数</param>
-        public HammingWindow(int waveformLength, int samplingFrequency)
-            : base(waveformLength, samplingFrequency, Hamming) { }
+        /// <remarks>サンプル数はN=2^Mが保証される</remarks>
+        public HammingWindow(int N, int samplingFrequency)
+            : base(N, samplingFrequency, Hamming) { }
 
         /// <summary>
         /// 波形に窓関数を適用する
@@ -160,10 +181,11 @@ namespace ExternalLibraryCore
         /// <summary>
         /// 矩形窓
         /// </summary>
-        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="N">波形から切り出すサンプル数</param>
         /// <param name="samplingFrequency">サンプリング周波数</param>
-        public RectangleWindow(int waveformLength, int samplingFrequency)
-            : base(waveformLength, samplingFrequency, Rect) { }
+        /// <remarks>サンプル数はN=2^Mが保証される</remarks>
+        public RectangleWindow(int N, int samplingFrequency)
+            : base(N, samplingFrequency, Rect) { }
 
         /// <summary>
         /// 波形に窓関数を適用する
@@ -190,10 +212,11 @@ namespace ExternalLibraryCore
         /// <summary>
         /// ブラックマン窓
         /// </summary>
-        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="N">波形から切り出すサンプル数</param>
         /// <param name="samplingFrequency">サンプリング周波数</param>
-        public BlackmanWindow(int waveformLength, int samplingFrequency)
-            : base(waveformLength, samplingFrequency, Blackman) { }
+        /// <remarks>サンプル数はN=2^Mが保証される</remarks>
+        public BlackmanWindow(int N, int samplingFrequency)
+            : base(N, samplingFrequency, Blackman) { }
 
         /// <summary>
         /// 波形に窓関数を適用する
@@ -222,10 +245,11 @@ namespace ExternalLibraryCore
         /// <summary>
         /// ブラックマン-ハリス窓
         /// </summary>
-        /// <param name="waveformLength">波形のサンプル数</param>
+        /// <param name="N">波形から切り出すサンプル数</param>
         /// <param name="samplingFrequency">サンプリング周波数</param>
-        public BlackmanHarrisWindow(int waveformLength, int samplingFrequency)
-            : base(waveformLength, samplingFrequency, BlackmanHarris) { }
+        /// <remarks>サンプル数はN=2^Mが保証される</remarks>
+        public BlackmanHarrisWindow(int N, int samplingFrequency)
+            : base(N, samplingFrequency, BlackmanHarris) { }
 
         /// <summary>
         /// 波形に窓関数を適用する
