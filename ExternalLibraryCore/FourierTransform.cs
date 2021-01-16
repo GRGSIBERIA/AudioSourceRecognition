@@ -29,9 +29,9 @@ namespace ExternalLibraryCore
 
         Dictionary<int, float> theta0_table;
 
-        complex_t[] input;
-        float[] spectrums;
-        AbstractWindow window;
+        complex_t[] input;      // 入力用の配列
+        float[] spectrums;      // スペクトル用の配列
+        AbstractWindow window;  // 窓関数
 
         /// <summary>
         /// フーリエ変換
@@ -53,8 +53,9 @@ namespace ExternalLibraryCore
             this.input = new complex_t[this.length];
 
             // スペクトルは半分
-            this.spectrums = new float[this.length / 2];
+            this.spectrums = new float[this.length >> 1];
 
+            // thetaテーブル
             this.theta0_table = new Dictionary<int, float>();
             for (int n = N; n != 2; n = n >> 1)
             {
@@ -70,37 +71,33 @@ namespace ExternalLibraryCore
             if (n == 2)
             {
                 complex_t* z = eo ? y : x;
-                if (s == 1)
+                for (int q = 0; q < s; ++q)
                 {
-                    float* xs = &x->re;
-                    float* zs = &z->re;
-                    Vector128<float> a = Sse.LoadVector128(xs + 2 * 0);
-                    Vector128<float> b = Sse.LoadVector128(xs + 2 * 1);
-                    Sse.Store(zs + 2 * 0, Sse.Add(a, b));
-                    Sse.Store(zs + 2 * 1, Sse.Subtract(a, b));
-                }
-                else
-                {
-                    for (int q = 0; q < s; q += 2)
-                    {
-                        float* xs = &(x + q)->re;
-                        float* zs = &(z + q)->re;
-                        Vector256<float> a = Avx.LoadVector256(xs + 2 * 0);
-                        Vector256<float> b = Avx.LoadVector256(xs + 2 * s);
-                        Avx.Store(zs + 2 * 0, Avx.Add(a, b));
-                        Avx.Store(zs + 2 * s, Avx.Subtract(a, b));
-                    }
+                    complex_t* a = &x[q + 0];
+                    complex_t* b = &x[q + s];
+                    z[q + 0].re = a->re + b->re;
+                    z[q + 0].im = a->im + b->im;
+                    z[q + s].re = a->re - b->re;
+                    z[q + s].re = a->im - b->im;
                 }
             }
             else if (n >= 4)
             {
-                if (s == 1)
+                for (int p = 0; p < m; ++p)
                 {
-                    
-                }
-                else
-                {
+                    complex_t wp = new complex_t(
+                        MathF.Cos(p * theta0), 
+                        -MathF.Sin(p * theta0));
 
+                    for (int q = 0; q < s; ++q)
+                    {
+                        complex_t* a = &x[q + s * (p + 0)];
+                        complex_t* b = &x[q + s * (p + m)];
+                        y[q + s * (2 * p + 0)].re = a->re + b->re;
+                        y[q + s * (2 * p + 0)].im = a->im + b->im;
+                        y[q + s * (2 * p + 1)].re = a->re * b->re - a->im * b->im;
+                        y[q + s * (2 * p + 1)].im = a->re * b->im - a->im * b->re;
+                    }
                 }
                 fft0(n >> 1, s << 1, !eo, y, x);
             }
@@ -108,33 +105,28 @@ namespace ExternalLibraryCore
         
         unsafe void InitializeInputComplex(float[] windowed)
         {
-            for (int i = 0; i < this.length; i += avx)
+            for (int i = 0; i < this.length; i += 4)
             {
-                Vector256<float> a, z;
+                Vector128<float> a, z;
+                
                 fixed (float* wp = &windowed[i])
                 {
-                    Sse.Prefetch0(wp + avx);
-                    a = Avx.LoadVector256(wp);
-                    z = Avx.Xor(a, a);  // zeroベクトル
+                    Sse.Prefetch0(wp + 4);
+                    a = Sse.LoadVector128(wp);
+                    z = Sse.Xor(a, a);  // zeroベクトル
                 }
 
-                // a -- 0 1 2 3 4 5 6 7 load
-                // z -- X X X X X X X X xor(a,a)
-                // z -- 0 X 1 X 2 X 3 X unpacklps(a,z)
-                // z -- X X X X X X X X xor(z,z)
-                // z -- 4 X 5 X 6 X 7 X unpackhps(a,z)
+                // a -- 3 2 1 0 load
+                // z -- X X X X xor(a,a)
+                // z -- X 1 X 0 unpacklo(a,z)
+                // z -- X 3 X 2 unpackhi(a,z)
                 
-                // 各々の複素数に代入
                 fixed (complex_t* cp = &input[i])
                 {
-                    z = Avx.UnpackLow(a, z);
-                    Avx.Store(&cp->re, z);
-                    Avx.Xor(z, z);
-                }
-                fixed (complex_t* cp = &input[i + avx >> 1])
-                {
-                    z = Avx.UnpackHigh(a, z);
-                    Avx.Store(&cp->re, z);
+                    z = Sse.UnpackLow(a, z);
+                    Sse.Store(&cp[0].re, z);
+                    z = Sse.UnpackHigh(a, z);
+                    Sse.Store(&cp[1].re, z);
                 }
             }
         }
