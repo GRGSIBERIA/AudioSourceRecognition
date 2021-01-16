@@ -118,8 +118,6 @@ namespace ExternalLibraryCore
                     z = Sse.Xor(a, a);  // zeroベクトル
                 }
 
-                
-
                 // a -- 3 2 1 0 load
                 // z -- X X X X xor(a,a)
                 // z -- X 1 X 0 unpacklo(a,z)
