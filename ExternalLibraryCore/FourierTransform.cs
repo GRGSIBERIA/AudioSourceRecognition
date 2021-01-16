@@ -121,6 +121,7 @@ namespace ExternalLibraryCore
                 // a -- 3 2 1 0 load
                 // z -- X X X X xor(a,a)
                 // z -- X 1 X 0 unpacklo(a,z)
+                // z -- X X X X xor(z,z)
                 // z -- X 3 X 2 unpackhi(a,z)
                 
                 fixed (complex_t* cp = &input[i])
@@ -128,6 +129,7 @@ namespace ExternalLibraryCore
                     
                     z = Sse.UnpackLow(a, z);
                     Sse.Store(&cp[0].re, z);
+                    z = Sse.Xor(z, z);
                     z = Sse.UnpackHigh(a, z);
                     Sse.Store(&cp[1].re, z);
                 }
