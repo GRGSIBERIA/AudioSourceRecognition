@@ -6,7 +6,7 @@ namespace ExternalLibraryCore
 {
     public interface IWindow
     {
-        float[] UseWindowing(float[] waveform);
+        float[] UseWindowing(float[] waveform, int spfreq);
     }
 
     public delegate float WindowFunction(float time);
@@ -27,7 +27,7 @@ namespace ExternalLibraryCore
         private float[] window;
         private float[] windowed;
 
-        public abstract float[] UseWindowing(float[] waveform);
+        public abstract float[] UseWindowing(float[] waveform, int spfreq);
 
         void Initialize(int length, int spfreq)
         {
@@ -41,9 +41,9 @@ namespace ExternalLibraryCore
             this.time = this.diff * this.window.Length;
         }
 
-        protected void CheckLength(float[] waveform)
+        protected void CheckLength(float[] waveform, int spfreq)
         {
-            if (waveform.Length != this.length)
+            if (waveform.Length < this.length || this.spfreq != spfreq)
             {
                 Initialize(waveform.Length, spfreq);
             }
@@ -57,9 +57,9 @@ namespace ExternalLibraryCore
             }
         }
 
-        protected float[] Windowing(float[] waveform)
+        protected float[] Windowing(float[] waveform, int spfreq)
         {
-            CheckLength(waveform);
+            CheckLength(waveform, spfreq);
 
             Vector256<float> wavein;
             Vector256<float> output;
@@ -109,10 +109,11 @@ namespace ExternalLibraryCore
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
+        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override float[] UseWindowing(float[] waveform, int spfreq)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, spfreq);
         }
 
         static float Hann(float t)
@@ -138,10 +139,11 @@ namespace ExternalLibraryCore
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
+        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override float[] UseWindowing(float[] waveform, int spfreq)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, spfreq);
         }
 
         static float Hamming(float t)
@@ -167,10 +169,11 @@ namespace ExternalLibraryCore
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
+        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override float[] UseWindowing(float[] waveform, int spfreq)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, spfreq);
         }
 
         static float Rect(float t)
@@ -196,10 +199,11 @@ namespace ExternalLibraryCore
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
+        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override float[] UseWindowing(float[] waveform, int spfreq)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, spfreq);
         }
 
         static float Blackman(float t)
@@ -227,10 +231,11 @@ namespace ExternalLibraryCore
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
+        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override float[] UseWindowing(float[] waveform, int spfreq)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, spfreq);
         }
 
         static float BlackmanHarris(float t)
