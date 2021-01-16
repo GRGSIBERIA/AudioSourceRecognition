@@ -95,8 +95,10 @@ namespace ExternalLibraryCore
                         complex_t* b = &x[q + s * (p + m)];
                         y[q + s * (2 * p + 0)].re = a->re + b->re;
                         y[q + s * (2 * p + 0)].im = a->im + b->im;
-                        y[q + s * (2 * p + 1)].re = a->re * b->re - a->im * b->im;
-                        y[q + s * (2 * p + 1)].im = a->re * b->im - a->im * b->re;
+                        y[q + s * (2 * p + 1)].re = a->re - b->re;
+                        y[q + s * (2 * p + 1)].im = a->re - b->im;
+                        y[q + s * (2 * p + 1)].re = y[q + s * (2 * p + 1)].re * wp.re - y[q + s * (2 * p + 1)].re * wp.im;
+                        y[q + s * (2 * p + 1)].im = y[q + s * (2 * p + 1)].im * wp.im + y[q + s * (2 * p + 1)].im * wp.re;
                     }
                 }
                 fft0(n >> 1, s << 1, !eo, y, x);
@@ -116,6 +118,8 @@ namespace ExternalLibraryCore
                     z = Sse.Xor(a, a);  // zeroベクトル
                 }
 
+                
+
                 // a -- 3 2 1 0 load
                 // z -- X X X X xor(a,a)
                 // z -- X 1 X 0 unpacklo(a,z)
@@ -123,6 +127,7 @@ namespace ExternalLibraryCore
                 
                 fixed (complex_t* cp = &input[i])
                 {
+                    
                     z = Sse.UnpackLow(a, z);
                     Sse.Store(&cp[0].re, z);
                     z = Sse.UnpackHigh(a, z);
