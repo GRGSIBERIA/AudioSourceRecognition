@@ -141,11 +141,14 @@ namespace ExternalLibraryCore
                     }
                 }
                 else
-                {
-                    // ストライドが狭すぎるパターン
+                {   // ストライドが狭すぎるパターン
+                    float w0, w1;
+                    
                     for (int p = 0; p < m; ++p)
                     {
-                        LoadSinCosTable(p, theta0);
+                        // LoadSinCosTable(p, theta0);
+                        w0 = MathF.Cos(p * theta0);
+                        w1 = -MathF.Sin(p * theta0);
 
                         for (int q = 0; q < s; ++q)
                         {   // Nの数が十分に大きいとこの中の計算が長くなる
@@ -159,8 +162,8 @@ namespace ExternalLibraryCore
 
                             y2[0] = a[0] - b[0];
                             y2[1] = a[1] - b[1];
-                            y2[0] = y2[0] * worker[0] - y2[1] * worker[1];
-                            y2[1] = y2[0] * worker[1] + y2[1] * worker[0];
+                            y2[0] = y2[0] * w0 - y2[1] * w1;
+                            y2[1] = y2[0] * w1 + y2[1] * w0;
                         }
                     }
                 }
