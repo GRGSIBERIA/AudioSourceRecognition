@@ -176,6 +176,30 @@ namespace ExternalLibraryCore
         }
 
         /// <summary>
+        /// Nの逆数を全体にかける関数
+        /// </summary>
+        /// <param name="output">出力</param>
+        /// <param name="N">系列数</param>
+        unsafe void InvN(complex_t* output, int N)
+        {
+            Vector256<float> wk, nk;
+            float invn = 1f / (float)N;
+            float[] invna = new float[8]
+            {
+                invn, invn, invn, invn,
+                invn, invn, invn, invn
+            };
+            for (int i = 0; i < N; i += 4)
+            {
+                wk = Avx.LoadVector256(&output[i].re);
+                fixed (float* inv = invna)
+                    nk = Avx.LoadVector256(inv);
+                wk = Avx.Multiply(wk, nk);
+                Avx.Store(&output[i].re, wk);
+            }
+        }
+
+        /// <summary>
         /// 高速フーリエ変換
         /// </summary>
         /// <param name="waveform">波形</param>
@@ -188,8 +212,14 @@ namespace ExternalLibraryCore
             unsafe
             {
                 fixed (complex_t* inp = input)
+                {
                     fixed (complex_t* outp = output)
+                    {
                         fft0(windowed.Length, 1, false, inp, outp);
+                        InvN(outp, windowed.Length);
+                    }
+                }
+                    
             }
 
             return spectrums;
