@@ -89,6 +89,10 @@ namespace ExternalLibraryCore
                 complex_t* z = eo ? y : x;
                 for (int q = 0; q < s; q += 4)
                 {
+                    // 原文はq + 2 * sとなっているが、
+                    // 2 * s項はcomplex_tポインタ上では半分になる
+                    // AVX化前のコードを辿るとその通りになっている
+
                     Vector256<float> a, b;
                     float* ap = &x[q + 0].re;
                     float* bp = &x[q + s].re;
@@ -106,31 +110,58 @@ namespace ExternalLibraryCore
             }
             else if (n >= 4)
             {
-                for (int p = 0; p < m; ++p)
+                if (s >= 4)
                 {
-                    // サインコサインのテーブルを作る
-                    Vector256<float> wp = LoadSinCosTable(p, theta0);
-                    Vector256<float> a, b, yy;
-                    for (int q = 0; q < s; q += 4)
+                    for (int p = 0; p < m; ++p)
                     {
-                        float* x0 = &x[q + s * (p + 0)].re;
-                        float* xm = &x[q + s * (p + m)].re;
+                        // サインコサインのテーブルを作る
+                        Vector256<float> wp = LoadSinCosTable(p, theta0);
+                        Vector256<float> a, b, yy;
+                        for (int q = 0; q < s; q += 4)
+                        {
+                            float* x0 = &x[q + s * (p + 0)].re;
+                            float* xm = &x[q + s * (p + m)].re;
 
-                        float* y1p = &y[q + s * (2 * p + 0)].re;
-                        float* y2p = &y[q + s * (2 * p + 1)].re;
+                            float* y1p = &y[q + s * (2 * p + 0)].re;
+                            float* y2p = &y[q + s * (2 * p + 1)].re;
 
-                        a = Avx.LoadVector256(x0);
-                        b = Avx.LoadVector256(xm);
-                        yy = Avx.Add(a, b);
-                        Avx.Store(y1p, yy); // 1個目の演算 (a+b)
+                            a = Avx.LoadVector256(x0);
+                            b = Avx.LoadVector256(xm);
+                            yy = Avx.Add(a, b);
+                            Avx.Store(y1p, yy); // 1個目の演算 (a+b)
 
-                        yy = Avx.Subtract(a, b);
-                        Vector256<float> yx;
-                        a = Avx.UnpackLow(yy, yy);
-                        b = Avx.UnpackHigh(yy, yy);
-                        yx = Avx.Shuffle(wp, wp, 0x55);
-                        yx = Avx.AddSubtract(Avx.Multiply(a, yy), Avx.Multiply(b, yx));
-                        Avx.Store(y2p, yx); // 2個目の演算 (a-b)*w
+                            yy = Avx.Subtract(a, b);
+                            Vector256<float> yx;
+                            a = Avx.UnpackLow(yy, yy);
+                            b = Avx.UnpackHigh(yy, yy);
+                            yx = Avx.Shuffle(wp, wp, 0x55);
+                            yx = Avx.AddSubtract(Avx.Multiply(a, yy), Avx.Multiply(b, yx));
+                            Avx.Store(y2p, yx); // 2個目の演算 (a-b)*w
+                        }
+                    }
+                }
+                else
+                {
+                    // ストライドが狭すぎるパターン
+                    for (int p = 0; p < m; ++p)
+                    {
+                        LoadSinCosTable(p, theta0);
+
+                        for (int q = 0; q < s; ++q)
+                        {   // Nの数が十分に大きいとこの中の計算が長くなる
+                            float* a = &x[q + s * (p + 0)].re;
+                            float* b = &x[q + s * (p + 1)].re;
+                            float* y1 = &y[q + s * (2 * p + 0)].re;
+                            float* y2 = &y[q + s * (2 * p + 0)].re;
+
+                            y1[0] = a[0] + b[0];
+                            y1[1] = a[1] + b[1];
+
+                            y2[0] = a[0] - b[0];
+                            y2[1] = a[1] - b[1];
+                            y2[0] = y2[0] * worker[0] - y2[1] * worker[1];
+                            y2[1] = y2[0] * worker[1] + y2[1] * worker[0];
+                        }
                     }
                 }
                 fft0(n >> 1, s << 1, !eo, y, x);
