@@ -53,8 +53,8 @@ namespace ExternalLibraryCore
             this.input = new complex_t[this.length];
             this.output = new complex_t[this.length];
 
-            // スペクトルは半分
-            this.spectrums = new float[this.length >> 1];
+            // スペクトルは半分だけど全部出しておく
+            this.spectrums = new float[this.length];
 
             // thetaテーブル
             this.theta0_table = new Dictionary<int, float>();
@@ -222,11 +222,41 @@ namespace ExternalLibraryCore
             }
         }
 
+        unsafe void ComputePowerSpectrum(complex_t* output, float* fourier, int N)
+        {
+            for (int i = 0; i < N; i += 4)
+            {
+                float* cp = &output[i].re;
+
+                // a --- r1 i1 r2 i2 r3 i3 r4 i4 movps
+                // b --- r1 r1 r2 r2 r3 r3 r4 r4 unpacklo(a,a)
+                // a --- i1 i1 i2 i2 r3 r3 r4 r4 unpackhi(a,a)
+                // i^2 = mul(a,a)
+                // r^2 = mul(b,b)
+                // a --- i^2 + r^2 add(a,b)
+                // sqrt(i^2+r^2) = sqrt(a)
+                // a --- p1 p1 p2 p2 p3 p3 p4 p4
+
+                Vector256<float> a, b;
+
+                a = Avx.LoadVector256(cp);
+                b = Avx.UnpackLow(a, a);
+                a = Avx.UnpackHigh(a, a);
+                a = Avx.Sqrt(
+                    Avx.Add(
+                        Avx.Multiply(a, a), 
+                        Avx.Multiply(b, b)));
+
+                for (int j = 0; j < 4; ++j)
+                    fourier[i * 4 + j * 2] = a.GetElement(j);
+            }
+        }
+
         /// <summary>
         /// 高速フーリエ変換
         /// </summary>
         /// <param name="waveform">波形</param>
-        /// <returns></returns>
+        /// <returns>パワースペクトル</returns>
         public float[] FFT(float[] waveform)
         {
             float[] windowed = window.UseWindowing(waveform, this.spfreq);
@@ -240,12 +270,18 @@ namespace ExternalLibraryCore
                     {
                         fft0(windowed.Length, 1, false, inp, outp);
                     }
+
                     InvN(outp, windowed.Length);    // Nの逆数で正規化
+
+                    fixed (float* fourier = spectrums)
+                    {
+                        ComputePowerSpectrum(outp, fourier, windowed.Length);
+                    }
                 }
                     
             }
 
-            return spectrums;
+            return spectrums;   // パワースペクトルを返す
         }
     }
 }
