@@ -111,7 +111,7 @@ namespace ExternalLibraryCore
             else if (n >= 4)
             {
                 if (s >= 4)
-                {
+                {   // ストライドが十分に広いなら計算できる
                     for (int p = 0; p < m; ++p)
                     {
                         // サインコサインのテーブルを作る
@@ -152,7 +152,7 @@ namespace ExternalLibraryCore
                             float* a = &x[q + s * (p + 0)].re;
                             float* b = &x[q + s * (p + 1)].re;
                             float* y1 = &y[q + s * (2 * p + 0)].re;
-                            float* y2 = &y[q + s * (2 * p + 0)].re;
+                            float* y2 = &y[q + s * (2 * p + 1)].re;
 
                             y1[0] = a[0] + b[0];
                             y1[1] = a[1] + b[1];
@@ -164,7 +164,7 @@ namespace ExternalLibraryCore
                         }
                     }
                 }
-                fft0(n >> 1, s << 1, !eo, y, x);
+                fft0(m, s << 1, !eo, y, x);
             }
         }
         
