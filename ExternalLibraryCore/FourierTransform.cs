@@ -119,14 +119,14 @@ namespace ExternalLibraryCore
                         Vector256<float> a, b, yy;
                         for (int q = 0; q < s; q += 4)
                         {
-                            float* x0 = &x[q + s * (p + 0)].re;
-                            float* xm = &x[q + s * (p + m)].re;
+                            float* ap = &x[q + s * (p + 0)].re;
+                            float* bp = &x[q + s * (p + m)].re;
 
                             float* y1p = &y[q + s * (2 * p + 0)].re;
                             float* y2p = &y[q + s * (2 * p + 1)].re;
 
-                            a = Avx.LoadVector256(x0);
-                            b = Avx.LoadVector256(xm);
+                            a = Avx.LoadVector256(ap);
+                            b = Avx.LoadVector256(bp);
                             yy = Avx.Add(a, b);
                             Avx.Store(y1p, yy); // 1個目の演算 (a+b)
 
@@ -140,10 +140,9 @@ namespace ExternalLibraryCore
                         }
                     }
                 }
-                else
-                {   // ストライドが狭すぎるパターン
+                else if (s == 2)
+                {   // ここもストライドが短い
                     float w0, w1;
-                    
                     for (int p = 0; p < m; ++p)
                     {
                         // LoadSinCosTable(p, theta0);
@@ -153,7 +152,7 @@ namespace ExternalLibraryCore
                         for (int q = 0; q < s; ++q)
                         {   // Nの数が十分に大きいとこの中の計算が長くなる
                             float* a = &x[q + s * (p + 0)].re;
-                            float* b = &x[q + s * (p + 1)].re;
+                            float* b = &x[q + s * (p + m)].re;
                             float* y1 = &y[q + s * (2 * p + 0)].re;
                             float* y2 = &y[q + s * (2 * p + 1)].re;
 
@@ -165,6 +164,30 @@ namespace ExternalLibraryCore
                             y2[0] = y2[0] * w0 - y2[1] * w1;
                             y2[1] = y2[0] * w1 + y2[1] * w0;
                         }
+                    }
+                }
+                else if (s == 1)
+                {   // ストライドが狭すぎるパターン
+                    float w0, w1;
+                    
+                    for (int p = 0; p < m; ++p)
+                    {
+                        // LoadSinCosTable(p, theta0);
+                        w0 = MathF.Cos(p * theta0);
+                        w1 = -MathF.Sin(p * theta0);
+                        float* a = &x[p + 0].re;
+                        float* b = &x[p + m].re;
+                        float* y1 = &y[2 * p + 0].re;
+                        float* y2 = &y[2 * p + 1].re;
+
+                        y1[0] = a[0] + b[0];
+                        y1[1] = a[1] + b[1];
+
+                        y2[0] = a[0] - b[0];
+                        y2[1] = a[1] - b[1];
+                        y2[0] = y2[0] * w0 - y2[1] * w1;
+                        y2[1] = y2[0] * w1 + y2[1] * w0;
+                        
                     }
                 }
                 fft0(m, s << 1, !eo, y, x);
