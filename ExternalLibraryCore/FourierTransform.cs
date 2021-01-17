@@ -109,17 +109,6 @@ namespace ExternalLibraryCore
                         Vector256<float> a, b, yy;
                         for (int q = 0; q < s; q += 4)
                         {
-                            /*
-                            complex_t* a = &x[q + s * (p + 0)];
-                            complex_t* b = &x[q + s * (p + m)];
-                            y[q + s * (2 * p + 0)].re = a->re + b->re;
-                            y[q + s * (2 * p + 0)].im = a->im + b->im;
-                            temp.re = a->re - b->re;
-                            temp.im = a->re - b->im;
-                            y[q + s * (2 * p + 1)].re = temp.re * wp.re - temp.im * wp.im;
-                            y[q + s * (2 * p + 1)].im = temp.re * wp.im + temp.im * wp.re;
-                            */
-
                             float* x0 = &x[q + s * (p + 0)].re;
                             float* xm = &x[q + s * (p + m)].re;
 
