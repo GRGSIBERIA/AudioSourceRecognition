@@ -64,70 +64,73 @@ namespace ExternalLibraryCore
             }
         }
 
+        private unsafe Vector256<float> LoadSinCosTable(int p, float theta0)
+        {
+            Vector256<float> wp;
+            worker[0] = MathF.Cos(p * theta0);
+            worker[1] = -MathF.Sin(p * theta0);
+            for (int i = 1; i < 8; ++i)
+            {
+                worker[i] = (i & 1) == 0 ? worker[0] : worker[1];
+            }   // シャッフルするよりコピーしたほうが速いかもしれない
+            fixed (float* workerp = worker)
+                wp = Avx.LoadVector256(workerp);
+
+            return wp;
+        }
+
         private unsafe void fft0(int n, int s, bool eo, complex_t* x, complex_t* y)
         {
             int m = n >> 1;
             float theta0 = theta0_table[n];
 
             if (n == 2)
-            {
-                // ストライドが2倍ずつ増えているのに、4以下になることは考えない
+            {   // ストライドが2倍ずつ増えているのに、4以下になることは考えない
                 complex_t* z = eo ? y : x;
                 for (int q = 0; q < s; q += 4)
                 {
                     Vector256<float> a, b;
-                    float* xf = &(x + q)->re;
-                    float* zf = &(z + q)->re;
+                    float* ap = &x[q + 0].re;
+                    float* bp = &x[q + s].re;
 
-                    a = Avx.LoadVector256(xf);
-                    b = Avx.LoadVector256(xf + 4 * s);
-                    Avx.Store(zf, Avx.Add(a, b));
-                    Avx.Store(zf + 4 * s, Avx.Subtract(a, b));
+                    a = Avx.LoadVector256(ap);
+                    b = Avx.LoadVector256(bp);
+
+                    float* azp = &z[q + 0].re;
+                    float* bzp = &z[q + s].re;
+
+                    Avx.Store(azp, Avx.Add(a, b));
+                    Avx.Store(bzp, Avx.Subtract(a, b));
+                    // ポインタは4と8の倍数になるものとする
                 }
             }
             else if (n >= 4)
             {
-                if (s == 1) // 1番最初に実行されたとき
+                for (int p = 0; p < m; ++p)
                 {
-
-                }
-                else        // 2回目以降に実行されたとき
-                {
-                    for (int p = 0; p < m; ++p)
+                    // サインコサインのテーブルを作る
+                    Vector256<float> wp = LoadSinCosTable(p, theta0);
+                    Vector256<float> a, b, yy;
+                    for (int q = 0; q < s; q += 4)
                     {
-                        // サインコサインのテーブルを作る
-                        Vector256<float> wp;
-                        worker[0] = MathF.Cos(p * theta0);
-                        worker[1] = -MathF.Sin(p * theta0);
-                        for (int i = 1; i < 8; ++i)
-                        {
-                            worker[i] = (i & 1) == 0 ? worker[0] : worker[1];
-                        }   // シャッフルするよりコピーしたほうが速いかもしれない
-                        fixed (float* workerp = worker)
-                            wp = Avx.LoadVector256(workerp);
+                        float* x0 = &x[q + s * (p + 0)].re;
+                        float* xm = &x[q + s * (p + m)].re;
 
-                        Vector256<float> a, b, yy;
-                        for (int q = 0; q < s; q += 4)
-                        {
-                            float* x0 = &x[q + s * (p + 0)].re;
-                            float* xm = &x[q + s * (p + m)].re;
+                        float* y1p = &y[q + s * (2 * p + 0)].re;
+                        float* y2p = &y[q + s * (2 * p + 1)].re;
 
-                            float* y1p = &y[q + s * (2 * p + 0)].re;
-                            float* y2p = &y[q + s * (2 * p + 1)].re;
+                        a = Avx.LoadVector256(x0);
+                        b = Avx.LoadVector256(xm);
+                        yy = Avx.Add(a, b);
+                        Avx.Store(y1p, yy); // 1個目の演算 (a+b)
 
-                            a = Avx.LoadVector256(x0);
-                            b = Avx.LoadVector256(xm);
-                            yy = Avx.Add(a, b);
-                            Avx.Store(y1p, yy); // 1個目の演算
-
-                            yy = Avx.Subtract(a, b);
-                            Vector256<float> yx;
-                            a = Avx.UnpackLow(wp, wp);
-                            b = Avx.UnpackHigh(wp, wp);
-                            yx = Avx.Shuffle(yy, yy, 0x55);
-                            yx = Avx.AddSubtract(Avx.Multiply(a, yy), Avx.Multiply(b, yx));
-                            Avx.Store(y2p, yx); // 2個目の演算
-                        }
+                        yy = Avx.Subtract(a, b);
+                        Vector256<float> yx;
+                        a = Avx.UnpackLow(yy, yy);
+                        b = Avx.UnpackHigh(yy, yy);
+                        yx = Avx.Shuffle(wp, wp, 0x55);
+                        yx = Avx.AddSubtract(Avx.Multiply(a, yy), Avx.Multiply(b, yx));
+                        Avx.Store(y2p, yx); // 2個目の演算 (a-b)*w
                     }
                 }
                 fft0(n >> 1, s << 1, !eo, y, x);
@@ -200,13 +203,13 @@ namespace ExternalLibraryCore
             InitializeInputComplex(windowed);
             unsafe
             {
-                fixed (complex_t* inp = input)
+                fixed (complex_t* outp = output)
                 {
-                    fixed (complex_t* outp = output)
+                    fixed (complex_t* inp = input)
                     {
                         fft0(windowed.Length, 1, false, inp, outp);
-                        InvN(outp, windowed.Length);
                     }
+                    InvN(outp, windowed.Length);    // Nの逆数で正規化
                 }
                     
             }
