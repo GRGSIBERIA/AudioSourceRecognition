@@ -248,6 +248,12 @@ namespace ExternalLibraryCore
             }
         }
 
+        /// <summary>
+        /// パワースペクトルを計算する
+        /// </summary>
+        /// <param name="output">出力配列のポインタ</param>
+        /// <param name="fourier">出力後の配列へのポインタ</param>
+        /// <param name="N">個数</param>
         unsafe void ComputePowerSpectrum(complex_t* output, float* fourier, int N)
         {
             for (int i = 0; i < N; i += 4)
