@@ -30,6 +30,9 @@ namespace ExternalLibraryCore
         Dictionary<int, float> theta0_table;
 
         complex_t[] input;      // 入力用の配列
+        complex_t[] output;     // 出力用の配列
+        float[] worker = new float[8];
+
         float[] spectrums;      // スペクトル用の配列
         AbstractWindow window;  // 窓関数
 
@@ -38,67 +41,104 @@ namespace ExternalLibraryCore
         /// </summary>
         /// <param name="window">窓関数</param>
         /// <param name="samplingFreq">サンプリング周波数</param>
-        /// <param name="N">系列長</param>
-        public FourierTransform(AbstractWindow window, int samplingFreq, int N)
+        public FourierTransform(AbstractWindow window, int samplingFreq)
         {
             // windowの窓幅とサンプル数は合致させなければならない
-            if (window.Length != N)
-                throw new ArgumentException("Window size not equals N");
 
             this.window = window;
-            this.length = N;
+            this.length = window.Length;
             this.spfreq = samplingFreq;
 
             // 実部は窓掛けしたものを代入する
             this.input = new complex_t[this.length];
+            this.output = new complex_t[this.length];
 
             // スペクトルは半分
             this.spectrums = new float[this.length >> 1];
 
             // thetaテーブル
             this.theta0_table = new Dictionary<int, float>();
-            for (int n = N; n != 2; n = n >> 1)
+            for (int n = this.length; n != 2; n = n >> 1)
             {
                 theta0_table.Add(n, 2f * MathF.PI / n);
             }
         }
 
-        unsafe void fft0(int n, int s, bool eo, complex_t* x, complex_t* y)
+        private unsafe void fft0(int n, int s, bool eo, complex_t* x, complex_t* y)
         {
             int m = n >> 1;
             float theta0 = theta0_table[n];
 
             if (n == 2)
             {
+                // ストライドが2倍ずつ増えているのに、4以下になることは考えない
                 complex_t* z = eo ? y : x;
-                for (int q = 0; q < s; ++q)
+                for (int q = 0; q < s; q += 4)
                 {
-                    complex_t* a = &x[q + 0];
-                    complex_t* b = &x[q + s];
-                    z[q + 0].re = a->re + b->re;
-                    z[q + 0].im = a->im + b->im;
-                    z[q + s].re = a->re - b->re;
-                    z[q + s].re = a->im - b->im;
+                    Vector256<float> a, b;
+                    float* xf = &(x + q)->re;
+                    float* zf = &(z + q)->re;
+
+                    a = Avx.LoadVector256(xf);
+                    b = Avx.LoadVector256(xf + 4 * s);
+                    Avx.Store(zf, Avx.Add(a, b));
+                    Avx.Store(zf + 4 * s, Avx.Subtract(a, b));
                 }
             }
             else if (n >= 4)
             {
-                for (int p = 0; p < m; ++p)
+                if (s == 1) // 1番最初に実行されたとき
                 {
-                    complex_t wp = new complex_t(
-                        MathF.Cos(p * theta0), 
-                        -MathF.Sin(p * theta0));
 
-                    for (int q = 0; q < s; ++q)
+                }
+                else        // 2回目以降に実行されたとき
+                {
+                    for (int p = 0; p < m; ++p)
                     {
-                        complex_t* a = &x[q + s * (p + 0)];
-                        complex_t* b = &x[q + s * (p + m)];
-                        y[q + s * (2 * p + 0)].re = a->re + b->re;
-                        y[q + s * (2 * p + 0)].im = a->im + b->im;
-                        y[q + s * (2 * p + 1)].re = a->re - b->re;
-                        y[q + s * (2 * p + 1)].im = a->re - b->im;
-                        y[q + s * (2 * p + 1)].re = y[q + s * (2 * p + 1)].re * wp.re - y[q + s * (2 * p + 1)].re * wp.im;
-                        y[q + s * (2 * p + 1)].im = y[q + s * (2 * p + 1)].im * wp.im + y[q + s * (2 * p + 1)].im * wp.re;
+                        // サインコサインのテーブルを作る
+                        Vector256<float> wp;
+                        worker[0] = MathF.Cos(p * theta0);
+                        worker[1] = -MathF.Sin(p * theta0);
+                        for (int i = 1; i < 8; ++i)
+                        {
+                            worker[i] = (i & 1) == 0 ? worker[0] : worker[1];
+                        }   // シャッフルするよりコピーしたほうが速いかもしれない
+                        fixed (float* workerp = worker)
+                            wp = Avx.LoadVector256(workerp);
+
+                        Vector256<float> a, b, yy;
+                        for (int q = 0; q < s; q += 4)
+                        {
+                            /*
+                            complex_t* a = &x[q + s * (p + 0)];
+                            complex_t* b = &x[q + s * (p + m)];
+                            y[q + s * (2 * p + 0)].re = a->re + b->re;
+                            y[q + s * (2 * p + 0)].im = a->im + b->im;
+                            temp.re = a->re - b->re;
+                            temp.im = a->re - b->im;
+                            y[q + s * (2 * p + 1)].re = temp.re * wp.re - temp.im * wp.im;
+                            y[q + s * (2 * p + 1)].im = temp.re * wp.im + temp.im * wp.re;
+                            */
+
+                            float* x0 = &x[q + s * (p + 0)].re;
+                            float* xm = &x[q + s * (p + m)].re;
+
+                            float* y1p = &y[q + s * (2 * p + 0)].re;
+                            float* y2p = &y[q + s * (2 * p + 1)].re;
+
+                            a = Avx.LoadVector256(x0);
+                            b = Avx.LoadVector256(xm);
+                            yy = Avx.Add(a, b);
+                            Avx.Store(y1p, yy); // 1個目の演算
+
+                            yy = Avx.Subtract(a, b);
+                            Vector256<float> yx;
+                            a = Avx.UnpackLow(wp, wp);
+                            b = Avx.UnpackHigh(wp, wp);
+                            yx = Avx.Shuffle(yy, yy, 0x55);
+                            yx = Avx.AddSubtract(Avx.Multiply(a, yy), Avx.Multiply(b, yx));
+                            Avx.Store(y2p, yx); // 2個目の演算
+                        }
                     }
                 }
                 fft0(n >> 1, s << 1, !eo, y, x);
@@ -145,6 +185,12 @@ namespace ExternalLibraryCore
             float[] windowed = window.UseWindowing(waveform, this.spfreq);
 
             InitializeInputComplex(windowed);
+            unsafe
+            {
+                fixed (complex_t* inp = input)
+                    fixed (complex_t* outp = output)
+                        fft0(windowed.Length, 1, false, inp, outp);
+            }
 
             return spectrums;
         }
