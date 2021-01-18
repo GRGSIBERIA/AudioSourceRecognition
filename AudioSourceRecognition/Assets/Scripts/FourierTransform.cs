@@ -122,6 +122,7 @@ namespace ExternalLibrary
 
             //---------------------------------------------------
             {   // 初期化フェーズ
+                initHandle.Complete();
                 InitializeJob initjob = new InitializeJob()
                 {
                     windowed = windowP,
@@ -129,7 +130,7 @@ namespace ExternalLibrary
                     output = this.output
                 };
                 initHandle = initjob.Schedule(N, 64);
-                initHandle.Complete();
+                JobHandle.ScheduleBatchedJobs();
             }
 
             //---------------------------------------------------
@@ -138,6 +139,7 @@ namespace ExternalLibrary
 
             //---------------------------------------------------
             {   // 出力フェーズ
+                finalizeHandle.Complete();
                 FinalizeJob finalizejob = new FinalizeJob()
                 {
                     N = this.N,
@@ -145,7 +147,7 @@ namespace ExternalLibrary
                     spectrums = this.spectrums
                 };
                 finalizeHandle = finalizejob.Schedule(N, 64);
-                finalizeHandle.Complete();
+                JobHandle.ScheduleBatchedJobs();
             }
 
             windowP.Dispose();  // こいつはDisposeしておく
