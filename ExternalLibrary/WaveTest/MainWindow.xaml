@@ -24,7 +24,8 @@
                 <ColumnDefinition Width="0.5*"/>
                 <ColumnDefinition Width="0.5*"/>
             </Grid.ColumnDefinitions>
-            
+            <oxy:PlotView Grid.Row="1" Grid.Column="1" DataContext="{Binding WaveformVM}" Model="{Binding Model}" Controller="{Binding Controller}"/>
+            <oxy:PlotView Grid.Row="1" Grid.Column="2" DataContext="{Binding SpectrumVM}" Model="{Binding Model}" Controller="{Binding Controller}"/>
         </Grid>
 
     </Grid>
