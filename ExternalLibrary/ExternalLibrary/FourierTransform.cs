@@ -69,7 +69,7 @@ namespace ExternalLibrary
             Vector256<float> wp;
             worker[0] = MathF.Cos(p * theta0);
             worker[1] = -MathF.Sin(p * theta0);
-            for (int i = 1; i < 8; ++i)
+            for (int i = 2; i < 8; ++i)
             {
                 worker[i] = (i & 1) == 0 ? worker[0] : worker[1];
             }   // シャッフルするよりコピーしたほうが速いかもしれない
