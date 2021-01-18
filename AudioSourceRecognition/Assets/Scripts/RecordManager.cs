@@ -56,6 +56,10 @@ public class RecordManager : MonoBehaviour
         return ordered;
     }
 
+    public AudioClip Clip { get { return sound.clip; } }
+
+    public AudioSource Source { get { return sound; } }
+
     public void StartRecording(string deviceName, int bufferingTime, int samplingFrequency)
     {
         this.deviceName = deviceName;
