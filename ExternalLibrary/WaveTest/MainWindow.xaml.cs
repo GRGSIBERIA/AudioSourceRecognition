@@ -24,5 +24,15 @@ namespace WaveTest
         {
             InitializeComponent();
         }
+
+        private void generateButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void analysisButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
