@@ -20,6 +20,9 @@ public class StartButtonScript : MonoBehaviour
     GameObject bufferingField;
 
     [SerializeField]
+    GameObject analizerObject;
+
+    [SerializeField]
     GameObject errorText;
 
     // キャッシュ化するコンポーネント
@@ -31,6 +34,7 @@ public class StartButtonScript : MonoBehaviour
     InputField samplingFrequency;
     InputField bufferingTime;
     Text errorMessage;
+    AnalyzerScript analyzer;
 
     // トグルボタンにしたいので都度判定を行う
     bool toggle = false;
@@ -66,6 +70,7 @@ public class StartButtonScript : MonoBehaviour
         samplingFrequency = samplingField.GetComponent<InputField>();
         bufferingTime = bufferingField.GetComponent<InputField>();
         errorMessage = errorText.GetComponent<Text>();
+        analyzer = analizerObject.GetComponent<AnalyzerScript>();
 
         btn.onClick.AddListener(() =>
         {
@@ -89,6 +94,7 @@ public class StartButtonScript : MonoBehaviour
                     int freq = int.Parse(samplingFrequency.text);
                     int time = int.Parse(bufferingTime.text);
                     sound.StartRecording(devices.options[id].text, time, freq);
+                    analyzer.InvokeAnalyze();
                     errorMessage.text = "";     // 何事もなく最後まで実行できた
                 }
                 catch (System.Exception e)

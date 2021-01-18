@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ExternalLibrary;
 
 public class AnalyzerScript : MonoBehaviour
 {
@@ -15,18 +16,26 @@ public class AnalyzerScript : MonoBehaviour
     [SerializeField]
     int fourierCount = 7;
 
-    float[][] fourier;
+    BlackmanHarrisWindow[] windows;
+
+    void InitializeWindow()
+    {
+        windows = new BlackmanHarrisWindow[fourierCount];
+        for (int i = 0; i < fourierCount; ++i)
+        {
+            windows[i] = new BlackmanHarrisWindow(startSample << i, recorder.SamplingRate);
+        }
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         recorder = recordObject.GetComponent<RecordManager>();
+    }
 
-        fourier = new float[fourierCount][];
-        for (int i = 0; i < fourierCount; ++i)
-        {
-            fourier[i] = new float[startSample << i];
-        }
+    public void InvokeAnalyze()
+    {
+        InitializeWindow();
     }
 
     // Update is called once per frame
@@ -41,7 +50,9 @@ public class AnalyzerScript : MonoBehaviour
         for (int i = 0; i < fourierCount; ++i)
         {
             // フーリエのバッファに蓄えさせる
-            System.Array.Copy(buffer, buffer.Length - fourier[i].Length - 1, fourier[i], 0, fourier[i].Length);
+            
         }
     }
 }
+
+

@@ -25,6 +25,8 @@ public class RecordManager : MonoBehaviour
     /// </summary>
     public int NumofSamples { get { return samplingFrequency * bufferingTime; } }
 
+    public int SamplingRate { get { return samplingFrequency; } }
+
     /// <summary>
     /// デバイス名
     /// </summary>
