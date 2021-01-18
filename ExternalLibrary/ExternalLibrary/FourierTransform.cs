@@ -198,6 +198,7 @@ namespace ExternalLibrary
         {
             for (int i = 0; i < this.length; i += 8)
             {
+                // 8列同時に初期化を行う
                 Vector256<float> a, b, z;
                 
                 fixed (float* wp = &windowed[i])
@@ -212,8 +213,7 @@ namespace ExternalLibrary
                 // b --- 0 X 1 X 4 X 5 X unpackhi(a,z)
                 // a --- 2 X 3 X 6 X 7 X unpacklo(a,z)
                 // z --- 0 X 1 X 2 X 3 X insertf128ps(b,T,1)
-                // z --- X X X X X X X X
-                // z --- 4 X 5 X X X x X insertf128ps(z,bh,0)
+                // z --- 4 X 5 X 2 X 3 X insertf128ps(z,bh,0)
                 // z --- 4 X 5 X 6 X 7 X insertf128ps(z,ah,1)
 
                 fixed (float* ip = &input[i].re)
@@ -222,7 +222,6 @@ namespace ExternalLibrary
                     a = Avx.UnpackHigh(a, z);
                     z = Avx.InsertVector128(b, a.GetLower(), 1);
                     Avx.Store(ip, z);
-                    z = Avx.Xor(z, z);
                     z = Avx.InsertVector128(z, b.GetUpper(), 0);
                     z = Avx.InsertVector128(z, a.GetUpper(), 1);
                     Avx.Store(ip + 8, z);
