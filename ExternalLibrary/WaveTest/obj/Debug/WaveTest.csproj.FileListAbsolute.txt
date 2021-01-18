@@ -20,3 +20,13 @@ C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest
 C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\obj\Debug\WaveTest.csproj.CopyComplete
 C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\obj\Debug\WaveTest.exe
 C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\obj\Debug\WaveTest.pdb
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Charting.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Core.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Data.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Drawing.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\Sparrow.Chart.Wpf.40.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Charting.xml
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Core.xml
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Data.xml
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\SciChart.Drawing.xml
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\WaveTest\bin\Debug\Sparrow.Chart.Wpf.40.xml

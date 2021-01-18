@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:sparrow="http://sparrowtoolkit.codeplex.com/wpf"
         xmlns:local="clr-namespace:WaveTest"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
@@ -14,9 +14,9 @@
         <Label x:Name="label1" Content="Window Size" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.488,0.429"/>
         <Label x:Name="label2" Content="Sin Wave" HorizontalAlignment="Left" Margin="10,66,0,0" VerticalAlignment="Top"/>
         <TextBox x:Name="sinWaveBox" HorizontalAlignment="Left" Height="23" Margin="110,68,0,0" TextWrapping="Wrap" Text="440" VerticalAlignment="Top" Width="120"/>
-        <Button x:Name="generateButton" Content="Generate" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Width="75" Click="generateButton_Click"/>
-        <Button x:Name="analysisButton" Content="Analyze" HorizontalAlignment="Left" Margin="110,99,0,0" VerticalAlignment="Top" Width="75" Click="analysisButton_Click"/>
-        <Grid HorizontalAlignment="Left" Height="282" Margin="10,128,0,0" VerticalAlignment="Top" Width="772">
+        <Button x:Name="generateButton" Content="Generate" HorizontalAlignment="Left" Margin="10,127,0,0" VerticalAlignment="Top" Width="75" Click="generateButton_Click"/>
+        <Button x:Name="analysisButton" Content="Analyze" HorizontalAlignment="Left" Margin="110,127,0,0" VerticalAlignment="Top" Width="75" Click="analysisButton_Click"/>
+        <Grid HorizontalAlignment="Left" Height="254" Margin="10,156,0,0" VerticalAlignment="Top" Width="772">
             <Grid.RowDefinitions>
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
@@ -24,9 +24,27 @@
                 <ColumnDefinition Width="0.5*"/>
                 <ColumnDefinition Width="0.5*"/>
             </Grid.ColumnDefinitions>
-            <oxy:PlotView Grid.Row="1" Grid.Column="1" DataContext="{Binding WaveformVM}" Model="{Binding Model}" Controller="{Binding Controller}"/>
-            <oxy:PlotView Grid.Row="1" Grid.Column="2" DataContext="{Binding SpectrumVM}" Model="{Binding Model}" Controller="{Binding Controller}"/>
+            <sparrow:SparrowChart Grid.Column="0" Grid.Row="0" Visibility="Visible" Background="Black">
+                <sparrow:SparrowChart.XAxes>
+                    <sparrow:LinearXAxis MinValue="0" Visibility="Visible" />
+                </sparrow:SparrowChart.XAxes>
+                <sparrow:SparrowChart.YAxes>
+                    <sparrow:LinearYAxis Visibility="Visible"/>
+                </sparrow:SparrowChart.YAxes>
+                <sparrow:LineSeries PointsSource="{Binding Path=Waveforms}" XPath="X" YPath="Y" Stroke="Green"/>
+            </sparrow:SparrowChart>
+            <sparrow:SparrowChart Grid.Column="1" Grid.Row="0" Visibility="Visible" Background="Black">
+                <sparrow:SparrowChart.XAxes>
+                    <sparrow:LinearXAxis MinValue="0" Visibility="Visible"/>
+                </sparrow:SparrowChart.XAxes>
+                <sparrow:SparrowChart.YAxes>
+                    <sparrow:LinearYAxis Visibility="Visible"/>
+                </sparrow:SparrowChart.YAxes>
+                <sparrow:LineSeries PointsSource="{Binding Path=Spectrums}" XPath="X" YPath="Y" Stroke="Green" />
+            </sparrow:SparrowChart>
         </Grid>
+        <Label x:Name="label3" Content="Time" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="timeBox" HorizontalAlignment="Left" Height="23" Margin="110,96,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" Width="120"/>
 
     </Grid>
 </Window>
