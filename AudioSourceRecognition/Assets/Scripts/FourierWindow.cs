@@ -6,7 +6,7 @@ namespace ExternalLibrary
 {
     public interface IWindow
     {
-        float[] UseWindowing(float[] waveform, int spfreq);
+        float[] UseWindowing(float[] waveform);
     }
 
     public delegate float WindowFunction(float time);
@@ -33,13 +33,16 @@ namespace ExternalLibrary
         /// </summary>
         public int Length { get { return length; } }
 
-        public abstract float[] UseWindowing(float[] waveform, int spfreq);
+        public abstract float[] UseWindowing(float[] waveform);
 
         void Initialize(int N, int spfreq)
         {
             this.spfreq = spfreq;
             int logN = (int)Mathf.Log(N, 2f);
             int powN = (int)Mathf.Pow(2f, logN);
+
+            if (powN != N) throw new ArgumentException("N is not powered by 2.");
+
             this.block = powN / avx;
             this.length = powN;
 
@@ -51,12 +54,13 @@ namespace ExternalLibrary
             this.time = this.diff * this.window.Length;
         }
 
-        protected void CheckLength(float[] waveform, int spfreq)
+        protected void CheckLength(float[] waveform)
         {
             // waveformの長さと内部的に保持している長さは一致しない
-            if (waveform.Length < this.length || this.spfreq != spfreq)
+            if (waveform.Length < this.length)
             {
-                Initialize(waveform.Length, spfreq);
+                //Initialize(waveform.Length, spfreq);
+                throw new ArgumentException("waveform length less than N.");
             }
         }
 
@@ -68,9 +72,9 @@ namespace ExternalLibrary
             }
         }
 
-        protected float[] Windowing(float[] waveform, int spfreq)
+        protected float[] Windowing(float[] waveform)
         {
-            CheckLength(waveform, spfreq);
+            CheckLength(waveform);
 
             // N点のバッファにコピー
             Array.Copy(waveform, waveform.Length - this.length, buffer, 0, this.length);
@@ -108,11 +112,10 @@ namespace ExternalLibrary
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
-        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform, int spfreq)
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, spfreq);
+            return Windowing(waveform);
         }
 
         static float Hann(float t)
@@ -139,11 +142,10 @@ namespace ExternalLibrary
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
-        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform, int spfreq)
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, spfreq);
+            return Windowing(waveform);
         }
 
         static float Hamming(float t)
@@ -170,11 +172,10 @@ namespace ExternalLibrary
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
-        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform, int spfreq)
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, spfreq);
+            return Windowing(waveform);
         }
 
         static float Rect(float t)
@@ -201,11 +202,10 @@ namespace ExternalLibrary
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
-        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform, int spfreq)
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, spfreq);
+            return Windowing(waveform);
         }
 
         static float Blackman(float t)
@@ -234,11 +234,10 @@ namespace ExternalLibrary
         /// 波形に窓関数を適用する
         /// </summary>
         /// <param name="waveform">波形データ</param>
-        /// <param name="spfreq">サンプリング周波数</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform, int spfreq)
+        public override float[] UseWindowing(float[] waveform)
         {
-            return Windowing(waveform, spfreq);
+            return Windowing(waveform);
         }
 
         static float BlackmanHarris(float t)
