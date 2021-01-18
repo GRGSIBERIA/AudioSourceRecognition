@@ -2,7 +2,7 @@
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
-namespace ExternalLibraryCore
+namespace ExternalLibrary
 {
     public interface IWindow
     {

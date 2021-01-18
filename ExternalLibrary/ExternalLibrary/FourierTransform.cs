@@ -6,7 +6,7 @@ using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Runtime.InteropServices;
 
-namespace ExternalLibraryCore
+namespace ExternalLibrary
 {
     public class FourierTransform
     {
@@ -196,30 +196,36 @@ namespace ExternalLibraryCore
         
         unsafe void InitializeInputComplex(float[] windowed)
         {
-            for (int i = 0; i < this.length; i += 4)
+            for (int i = 0; i < this.length; i += 8)
             {
-                Vector128<float> a, z;
+                Vector256<float> a, b, z;
                 
                 fixed (float* wp = &windowed[i])
                 {
-                    Sse.Prefetch0(wp + 4);
-                    a = Sse.LoadVector128(wp);
-                    z = Sse.Xor(a, a);  // zeroベクトル
+                    Avx.Prefetch0(wp + 8);
+                    a = Avx.LoadVector256(wp);
+                    z = Avx.Xor(a, a);  // zeroベクトル
                 }
 
-                // a -- 3 2 1 0 load
-                // z -- X X X X xor(a,a)
-                // z -- X 1 X 0 unpacklo(a,z)
-                // z -- X X X X xor(z,z)
-                // z -- X 3 X 2 unpackhi(a,z)
-                
-                fixed (complex_t* cp = &input[i])
+                // a --- 0 1 2 3 4 5 6 7 movps
+                // z --- X X X X X X X X movps, xor
+                // b --- 0 X 1 X 4 X 5 X unpackhi(a,z)
+                // a --- 2 X 3 X 6 X 7 X unpacklo(a,z)
+                // z --- 0 X 1 X 2 X 3 X insertf128ps(b,T,1)
+                // z --- X X X X X X X X
+                // z --- 4 X 5 X X X x X insertf128ps(z,bh,0)
+                // z --- 4 X 5 X 6 X 7 X insertf128ps(z,ah,1)
+
+                fixed (float* ip = &input[i].re)
                 {
-                    z = Sse.UnpackLow(a, z);
-                    Sse.Store(&cp[0].re, z);
-                    z = Sse.Xor(z, z);
-                    z = Sse.UnpackHigh(a, z);
-                    Sse.Store(&cp[1].re, z);
+                    b = Avx.UnpackLow(a, z);
+                    a = Avx.UnpackHigh(a, z);
+                    z = Avx.InsertVector128(b, a.GetLower(), 1);
+                    Avx.Store(ip, z);
+                    z = Avx.Xor(z, z);
+                    z = Avx.InsertVector128(z, b.GetUpper(), 0);
+                    z = Avx.InsertVector128(z, a.GetUpper(), 1);
+                    Avx.Store(ip + 8, z);
                 }
             }
         }
