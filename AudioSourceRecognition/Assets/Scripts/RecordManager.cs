@@ -87,6 +87,8 @@ public class RecordManager : MonoBehaviour
 
     private void Update()
     {
+        if (sound.clip == null) return;
+
         // アップデートごとにマイクから取得した音源をコピーする
         int position = Microphone.GetPosition(deviceName);  // マイク端の位置だと思う
 

@@ -93,6 +93,9 @@ public class StartButtonScript : MonoBehaviour
                 {
                     int freq = int.Parse(samplingFrequency.text);
                     int time = int.Parse(bufferingTime.text);
+                    devices.interactable = false;
+                    samplingFrequency.interactable = false;
+                    bufferingTime.interactable = false;
                     sound.StartRecording(devices.options[id].text, time, freq);
                     analyzer.InvokeAnalyze();
                     errorMessage.text = "";     // 何事もなく最後まで実行できた
@@ -104,6 +107,9 @@ public class StartButtonScript : MonoBehaviour
                     ShowToStart();
                     errorMessage.text = e.Message;
                     Debug.LogError(e.Message);
+                    devices.interactable = true;
+                    samplingFrequency.interactable = true;
+                    bufferingTime.interactable = true;
                 }
             }
             else
