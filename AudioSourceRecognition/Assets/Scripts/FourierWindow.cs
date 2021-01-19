@@ -1,17 +1,20 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using Unity.Collections;
+using Unity.Burst;
+using Unity.Jobs;
 
 namespace ExternalLibrary
 {
     public interface IWindow
     {
-        float[] UseWindowing(float[] waveform);
+        NativeArray<float> UseWindowing(float[] waveform, JobHandle handles);
     }
 
     public delegate float WindowFunction(float time);
 
-    public abstract class AbstractWindow : IWindow
+    public abstract class AbstractWindow : IWindow, IDisposable
     {
         /// <summary>
         /// AVXは256個の数字を
@@ -24,16 +27,16 @@ namespace ExternalLibrary
         private float diff;
         private float time;
 
-        private float[] buffer;
-        private float[] window;
-        private float[] windowed;
+        private NativeArray<float> buffer;
+        private NativeArray<float> window;
+        private NativeArray<float> windowed;
 
         /// <summary>
         /// 窓掛け後の長さを返す
         /// </summary>
         public int Length { get { return length; } }
 
-        public abstract float[] UseWindowing(float[] waveform);
+        public abstract NativeArray<float> UseWindowing(float[] waveform, JobHandle handles);
 
         void Initialize(int N, int spfreq)
         {
@@ -46,9 +49,9 @@ namespace ExternalLibrary
             this.block = powN / avx;
             this.length = powN;
 
-            this.buffer = new float[this.length];
-            this.window = new float[this.length];
-            this.windowed = new float[this.length];
+            this.buffer = new NativeArray<float>(this.length, Allocator.Persistent);
+            this.window = new NativeArray<float>(this.length, Allocator.Persistent);
+            this.windowed = new NativeArray<float>(this.length, Allocator.Persistent);
 
             this.diff = 1f / (float)spfreq;
             this.time = this.diff * this.window.Length;
@@ -72,17 +75,49 @@ namespace ExternalLibrary
             }
         }
 
-        protected float[] Windowing(float[] waveform)
+        /// <summary>
+        /// 窓掛け用のジョブ
+        /// </summary>
+        [BurstCompile]
+        struct WindowingJob : IJobParallelFor
+        {
+            [ReadOnly] public NativeArray<float> buffer;
+            [ReadOnly] public NativeArray<float> window;
+            [WriteOnly] public NativeArray<float> windowed;
+
+            void IJobParallelFor.Execute(int i)
+            {
+                windowed[i] = window[i] * buffer[i];
+            }
+        }
+
+        protected NativeArray<float> Windowing(float[] waveform, JobHandle handles)
         {
             CheckLength(waveform);
 
             // N点のバッファにコピー
-            Array.Copy(waveform, waveform.Length - this.length, buffer, 0, this.length);
+            NativeArray<float>.Copy(waveform, waveform.Length - this.length, buffer, 0, this.length);
 
-            for (int i = 0; i < buffer.Length; ++i)
-                windowed[i] = window[i] * buffer[i];
+            // Burstで窓掛けのジョブを流す
+            handles.Complete();
+            WindowingJob job = new WindowingJob()
+            {
+                buffer = this.buffer,
+                window = this.window,
+                windowed = this.windowed
+            };
+            handles = job.Schedule(this.length, 256);
+            JobHandle.ScheduleBatchedJobs();
+            handles.Complete();
 
             return windowed;
+        }
+
+        public void Dispose()
+        {
+            this.buffer.Dispose();
+            this.window.Dispose();
+            this.windowed.Dispose();
         }
 
         public AbstractWindow(int N,
@@ -113,9 +148,9 @@ namespace ExternalLibrary
         /// </summary>
         /// <param name="waveform">波形データ</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override NativeArray<float> UseWindowing(float[] waveform, JobHandle handles)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, handles);
         }
 
         static float Hann(float t)
@@ -143,9 +178,9 @@ namespace ExternalLibrary
         /// </summary>
         /// <param name="waveform">波形データ</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override NativeArray<float> UseWindowing(float[] waveform, JobHandle handles)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, handles);
         }
 
         static float Hamming(float t)
@@ -173,9 +208,9 @@ namespace ExternalLibrary
         /// </summary>
         /// <param name="waveform">波形データ</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override NativeArray<float> UseWindowing(float[] waveform, JobHandle handles)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, handles);
         }
 
         static float Rect(float t)
@@ -203,9 +238,9 @@ namespace ExternalLibrary
         /// </summary>
         /// <param name="waveform">波形データ</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override NativeArray<float> UseWindowing(float[] waveform, JobHandle handles)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, handles);
         }
 
         static float Blackman(float t)
@@ -235,9 +270,9 @@ namespace ExternalLibrary
         /// </summary>
         /// <param name="waveform">波形データ</param>
         /// <returns>窓かけした波形データ</returns>
-        public override float[] UseWindowing(float[] waveform)
+        public override NativeArray<float> UseWindowing(float[] waveform, JobHandle handles)
         {
-            return Windowing(waveform);
+            return Windowing(waveform, handles);
         }
 
         static float BlackmanHarris(float t)

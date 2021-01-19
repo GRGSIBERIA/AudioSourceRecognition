@@ -32,6 +32,7 @@ namespace ExternalLibrary
             input = new NativeArray<float2>(N, Allocator.Persistent);
             output = new NativeArray<float2>(N, Allocator.Persistent);
             spectrums = new NativeArray<float>(N, Allocator.Persistent);
+            this.wf = wf;
         }
 
         float2 Cross(float2 a, float2 b)
@@ -76,12 +77,7 @@ namespace ExternalLibrary
         /// <summary>
         /// 初期化ハンドル
         /// </summary>
-        JobHandle initHandle;
-
-        /// <summary>
-        /// スペクトルに変換するためのハンドル
-        /// </summary>
-        JobHandle finalizeHandle;
+        JobHandle handles;
 
         [BurstCompile]
         struct InitializeJob : IJobParallelFor
@@ -107,7 +103,7 @@ namespace ExternalLibrary
             public void Execute(int i)
             {
                 float2 INP = input[i] / N;
-
+                
                 spectrums[i] =
                     Mathf.Sqrt(
                         INP.x * INP.x +
@@ -117,20 +113,20 @@ namespace ExternalLibrary
 
         public float[] FFT(float[] waveform)
         {
-            float[] windowed = wf.UseWindowing(waveform);
-            NativeArray<float> windowP = new NativeArray<float>(windowed, Allocator.TempJob);
+            NativeArray<float> windowed = wf.UseWindowing(waveform, handles);
 
             //---------------------------------------------------
             {   // 初期化フェーズ
-                initHandle.Complete();
+                handles.Complete();
                 InitializeJob initjob = new InitializeJob()
                 {
-                    windowed = windowP,
+                    windowed = windowed,
                     input = this.input,
                     output = this.output
                 };
-                initHandle = initjob.Schedule(N, 64);
+                handles = initjob.Schedule(N, 256);
                 JobHandle.ScheduleBatchedJobs();
+                handles.Complete();
             }
 
             //---------------------------------------------------
@@ -139,24 +135,22 @@ namespace ExternalLibrary
 
             //---------------------------------------------------
             {   // 出力フェーズ
-                finalizeHandle.Complete();
+                handles.Complete();
                 FinalizeJob finalizejob = new FinalizeJob()
                 {
                     N = this.N,
                     input = this.input,
                     spectrums = this.spectrums
                 };
-                finalizeHandle = finalizejob.Schedule(N, 64);
+                handles = finalizejob.Schedule(N, 256);
                 JobHandle.ScheduleBatchedJobs();
+                handles.Complete();
             }
 
-            windowP.Dispose();  // こいつはDisposeしておく
-
-            // TODO: 窓掛けもバッチ化したい
             return spectrums.ToArray();
         }
 
-        void IDisposable.Dispose()
+        public void Dispose()
         {
             input.Dispose();
             output.Dispose();

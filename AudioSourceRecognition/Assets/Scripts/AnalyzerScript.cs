@@ -18,12 +18,16 @@ public class AnalyzerScript : MonoBehaviour
 
     BlackmanHarrisWindow[] windows;
 
+    FourierTransform[] fft;
+
     void InitializeWindow()
     {
         windows = new BlackmanHarrisWindow[fourierCount];
+        fft = new FourierTransform[fourierCount];
         for (int i = 0; i < fourierCount; ++i)
         {
             windows[i] = new BlackmanHarrisWindow(startSample << i, recorder.SamplingRate);
+            fft[i] = new FourierTransform(startSample << i, windows[i]);
         }
     }
 
@@ -43,14 +47,24 @@ public class AnalyzerScript : MonoBehaviour
     {
         var sound = recorder.Source;
 
-        if (sound == null) return;  // 未割り当ての場合はここから先の処理は行わない
+        // 未割り当て、もしくはレコーディング中でない場合はここから先の処理は行わない
+        if (sound.clip == null || !recorder.IsRecording) return;
 
         var buffer = recorder.GetData();
 
         for (int i = 0; i < fourierCount; ++i)
         {
             // フーリエのバッファに蓄えさせる
-            
+            fft[i].FFT(buffer);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        for (int i = 0; i < fourierCount; ++i)
+        {
+            windows[i].Dispose();
+            fft[i].Dispose();
         }
     }
 }
