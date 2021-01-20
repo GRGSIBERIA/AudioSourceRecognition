@@ -1,0 +1,10 @@
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\bin\Debug\AudioSourceApplication.exe.config
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\bin\Debug\AudioSourceApplication.exe
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\bin\Debug\AudioSourceApplication.pdb
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.csprojAssemblyReference.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.MainForm.resources
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.Properties.Resources.resources
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.csproj.GenerateResource.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.csproj.CoreCompileInputs.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.exe
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\AudioSourceApplication\AudioSourceApplication\obj\Debug\AudioSourceApplication.pdb
