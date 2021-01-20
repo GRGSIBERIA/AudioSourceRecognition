@@ -167,8 +167,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recordObject: {fileID: 1030527523}
-  startSample: 1024
-  fourierCount: 7
+  fourierPrefab: {fileID: 9055529920072198807, guid: 6ea0c1d8f6b0ae34d9265d9bcc2dd96f, type: 3}
+  sampleN: 8192
 --- !u!1 &256322640
 GameObject:
   m_ObjectHideFlags: 0
@@ -1610,7 +1610,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   recordManager: {fileID: 1030527523}
-  aspect: 0
 --- !u!4 &1030327699
 Transform:
   m_ObjectHideFlags: 0

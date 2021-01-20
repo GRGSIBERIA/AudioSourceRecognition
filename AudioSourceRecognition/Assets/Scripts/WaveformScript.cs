@@ -15,7 +15,6 @@ public class WaveformScript : MonoBehaviour
 
     bool initialized = false;
 
-    [SerializeField]
     float aspect;
 
     // Start is called before the first frame update
