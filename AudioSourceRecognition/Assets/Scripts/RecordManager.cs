@@ -25,6 +25,8 @@ public class RecordManager : MonoBehaviour
     /// </summary>
     public int NumofSamples { get { return samplingFrequency * bufferingTime; } }
 
+    public int SamplingRate { get { return samplingFrequency; } }
+
     /// <summary>
     /// デバイス名
     /// </summary>
@@ -56,6 +58,10 @@ public class RecordManager : MonoBehaviour
         return ordered;
     }
 
+    public AudioClip Clip { get { return sound.clip; } }
+
+    public AudioSource Source { get { return sound; } }
+
     public void StartRecording(string deviceName, int bufferingTime, int samplingFrequency)
     {
         this.deviceName = deviceName;
@@ -81,6 +87,8 @@ public class RecordManager : MonoBehaviour
 
     private void Update()
     {
+        if (sound.clip == null) return;
+
         // アップデートごとにマイクから取得した音源をコピーする
         int position = Microphone.GetPosition(deviceName);  // マイク端の位置だと思う
 

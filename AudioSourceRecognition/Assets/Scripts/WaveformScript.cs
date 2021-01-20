@@ -1,9 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Burst;
-using Unity.Jobs;
-using Unity.Collections;
 
 [RequireComponent(typeof(LineRenderer))]
 public class WaveformScript : MonoBehaviour
@@ -28,7 +25,7 @@ public class WaveformScript : MonoBehaviour
         line = GetComponent<LineRenderer>();
         line.startWidth = 0.01f;
         line.endWidth = 0.01f;
-        aspect = 6f;    // 4:3�ł�����Ȃ��l
+        aspect = 6f;    // 4:3でも乱れない値
     }
 
     private void Update()
@@ -38,32 +35,35 @@ public class WaveformScript : MonoBehaviour
             vertices = new Vector3[recorder.NumofSamples];
             line.positionCount = vertices.Length;
             initialized = true;
+
+            float offset = aspect;
+            float xdiff = aspect * 2f / (float)vertices.Length;
+
+            for (int i = 0; i < vertices.Length; ++i)
+            {
+                vertices[i].x = i * xdiff - offset;
+                vertices[i].z = 0f;
+            }
         }
-    }
-
-    void CollectVertices(float[] waveform)
-    {
-        float offset = aspect;
-        float xdiff = aspect * 2f / (float)waveform.Length;
-        float ydiff = 0.5f;
-
-        for (int i = 0; i < waveform.Length; ++i)
+        else if (!recorder.IsRecording && initialized)
         {
-            vertices[i].x = i * xdiff - offset;
-            vertices[i].y = waveform[i] * ydiff;
-            vertices[i].z = 0f;
+            // レコーディングしてないのに、初期化されているのはおかしい
+            initialized = false;
         }
     }
-    
+
     // Update is called once per frame
     public void OnRenderObject()
     {
-        var resolution = Screen.currentResolution;
-
         if (!recorder.IsRecording) return;
 
         var waveform = recorder.GetData();
-        CollectVertices(waveform);
+
+        const float ydiff = 0.5f;
+        for (int i = 0; i < waveform.Length; ++i)
+        {
+            vertices[i].y = waveform[i] * ydiff;
+        }
 
         line.SetPositions(vertices);
     }

@@ -1,0 +1,9 @@
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\bin\Release\netcoreapp3.1\ExternalLibrary.deps.json
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\bin\Release\netcoreapp3.1\ExternalLibrary.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\bin\Release\netcoreapp3.1\ExternalLibrary.pdb
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\obj\Release\netcoreapp3.1\ExternalLibrary.csprojAssemblyReference.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\obj\Release\netcoreapp3.1\ExternalLibrary.AssemblyInfoInputs.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\obj\Release\netcoreapp3.1\ExternalLibrary.AssemblyInfo.cs
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\obj\Release\netcoreapp3.1\ExternalLibrary.csproj.CoreCompileInputs.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\obj\Release\netcoreapp3.1\ExternalLibrary.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\ExternalLibrary\ExternalLibrary\obj\Release\netcoreapp3.1\ExternalLibrary.pdb
