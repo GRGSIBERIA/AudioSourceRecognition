@@ -20,7 +20,9 @@ namespace ExternalLibrary
 
         NativeArray<float> spectrums;
         AbstractWindow wf;
-        
+
+        const int batch = 512;
+
         /// <summary>
         /// フーリエ変換
         /// </summary>
@@ -105,9 +107,9 @@ namespace ExternalLibrary
                 float2 INP = input[i] / N;
                 
                 spectrums[i] =
-                    Mathf.Sqrt(
+                    Mathf.Pow(Mathf.Sqrt(
                         INP.x * INP.x +
-                        INP.y * INP.y);
+                        INP.y * INP.y), 2f);
             }
         }
 
@@ -124,7 +126,7 @@ namespace ExternalLibrary
                     input = this.input,
                     output = this.output
                 };
-                handles = initjob.Schedule(N, 256);
+                handles = initjob.Schedule(N, batch);
                 JobHandle.ScheduleBatchedJobs();
                 handles.Complete();
             }
@@ -142,7 +144,7 @@ namespace ExternalLibrary
                     input = this.input,
                     spectrums = this.spectrums
                 };
-                handles = finalizejob.Schedule(N, 256);
+                handles = finalizejob.Schedule(N, batch);
                 JobHandle.ScheduleBatchedJobs();
                 handles.Complete();
             }

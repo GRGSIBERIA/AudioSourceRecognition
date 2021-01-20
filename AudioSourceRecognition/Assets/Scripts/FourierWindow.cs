@@ -31,6 +31,8 @@ namespace ExternalLibrary
         private NativeArray<float> window;
         private NativeArray<float> windowed;
 
+        const int batch = 512;
+
         /// <summary>
         /// 窓掛け後の長さを返す
         /// </summary>
@@ -106,7 +108,7 @@ namespace ExternalLibrary
                 window = this.window,
                 windowed = this.windowed
             };
-            handles = job.Schedule(this.length, 256);
+            handles = job.Schedule(this.length, batch);
             JobHandle.ScheduleBatchedJobs();
             handles.Complete();
 
