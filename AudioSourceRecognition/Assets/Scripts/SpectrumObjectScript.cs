@@ -25,8 +25,8 @@ public class SpectrumObjectScript : MonoBehaviour
         {
             pos[i] = new Vector3(
                 (float)i * xdiff - offset,
-                Spectrums[i],
-                0f);
+                Mathf.Log10(Spectrums[i]),
+                Time.time);
         }
         line.SetPositions(pos);
 
@@ -36,6 +36,11 @@ public class SpectrumObjectScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        ts.localPosition -= Vector3.back * Time.deltaTime;
+        
+    }
+
+    public void OnRenderObject()
+    {
+        
     }
 }

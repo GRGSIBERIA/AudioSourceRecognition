@@ -32,6 +32,7 @@ public class AnalyzerScript : MonoBehaviour
     void Start()
     {
         ts = GetComponent<Transform>();
+        recorder = recordObject.GetComponent<RecordManager>();
     }
 
     public void InvokeAnalyze()
@@ -54,7 +55,7 @@ public class AnalyzerScript : MonoBehaviour
         fourier.SampleN = sampleN;
         fourier.Spectrums = new float[sampleN];
         fourier.Aspect = aspect;
-        System.Array.Copy(spectrums, sampleN, fourier.Spectrums, 0, sampleN);
+        System.Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
     }
 }
 
