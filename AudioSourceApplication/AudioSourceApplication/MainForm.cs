@@ -18,7 +18,7 @@ namespace AudioSourceApplication
             InitializeComponent();
         }
 
-        SoundPlayer player;
+        WavFile wav;
 
         /// <summary>
         /// WAVファイルの読み込み
@@ -36,9 +36,14 @@ namespace AudioSourceApplication
             {
                 using (BinaryReader br = new BinaryReader(ofd.OpenFile()))
                 {
-
+                    wav = new WavFile(br);
                 }
             }
+        }
+
+        private void toolStripMenuItemExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
