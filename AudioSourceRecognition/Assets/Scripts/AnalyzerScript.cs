@@ -75,6 +75,11 @@ public class AnalyzerScript : MonoBehaviour
 
         // フーリエのバッファに蓄えさせる
         fourier = fft.FFT(buffer);
+
+        // フーリエ解析するごとに後ろに下がる
+        var local = transform.localPosition;
+        local.z -= Time.deltaTime;
+        transform.localPosition = local;
     }
 
     public void OnRenderObject()
