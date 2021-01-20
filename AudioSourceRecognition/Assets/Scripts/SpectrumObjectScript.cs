@@ -11,24 +11,23 @@ public class SpectrumObjectScript : MonoBehaviour
 
     Transform ts;
 
+    Vector3[] pos;
+
+    public RecordManager Recorder { get; set; }
+
+    LineRenderer line;
+    float xdiff;
+    float offset;
+
     // Start is called before the first frame update
     void Start()
     {
-        var line = GetComponent<LineRenderer>();
+        line = GetComponent<LineRenderer>();
         line.positionCount = SampleN;
-        Vector3[] pos = new Vector3[SampleN];
+        pos = new Vector3[SampleN];
 
-        float xdiff = Aspect * 2f / (float)SampleN;
-        float offset = Aspect;
-
-        for (int i = 0; i < SampleN; ++i)
-        {
-            pos[i] = new Vector3(
-                (float)i * xdiff - offset,
-                Mathf.Log10(Spectrums[i]),
-                Time.time);
-        }
-        line.SetPositions(pos);
+        xdiff = Aspect * 2f / (float)SampleN;
+        offset = Aspect;
 
         ts = transform;
     }
@@ -41,6 +40,15 @@ public class SpectrumObjectScript : MonoBehaviour
 
     public void OnRenderObject()
     {
-        
+        if (!Recorder.IsRecording) return;
+
+        for (int i = 0; i < SampleN; ++i)
+        {
+            pos[i] = new Vector3(
+                (float)i * xdiff - offset,
+                Spectrums[i],
+                0f);
+        }
+        line.SetPositions(pos);
     }
 }

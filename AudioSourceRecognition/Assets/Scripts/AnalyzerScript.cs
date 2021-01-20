@@ -21,6 +21,8 @@ public class AnalyzerScript : MonoBehaviour
 
     RecordManager recorder;
 
+    SpectrumObjectScript fourier;
+
     Transform ts;
 
     void InitializeWindow()
@@ -33,6 +35,13 @@ public class AnalyzerScript : MonoBehaviour
     {
         ts = GetComponent<Transform>();
         recorder = recordObject.GetComponent<RecordManager>();
+
+        GameObject inst = Instantiate(fourierPrefab, ts);
+        fourier = inst.GetComponent<SpectrumObjectScript>();
+        fourier.SampleN = sampleN;
+        fourier.Spectrums = new float[sampleN];
+        fourier.Aspect = aspect;
+        fourier.Recorder = recorder;
     }
 
     public void InvokeAnalyze()
@@ -50,11 +59,6 @@ public class AnalyzerScript : MonoBehaviour
 
         sound.GetSpectrumData(spectrums, 1, FFTWindow.BlackmanHarris);
 
-        GameObject inst = Instantiate(fourierPrefab, ts);
-        var fourier = inst.GetComponent<SpectrumObjectScript>();
-        fourier.SampleN = sampleN;
-        fourier.Spectrums = new float[sampleN];
-        fourier.Aspect = aspect;
         System.Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
     }
 }
