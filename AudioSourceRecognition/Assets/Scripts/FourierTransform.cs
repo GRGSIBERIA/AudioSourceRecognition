@@ -111,7 +111,7 @@ namespace ExternalLibrary
             }
         }
 
-        public float[] FFT(float[] waveform)
+        public NativeArray<float> FFT(float[] waveform)
         {
             NativeArray<float> windowed = wf.UseWindowing(waveform, handles);
 
@@ -147,7 +147,7 @@ namespace ExternalLibrary
                 handles.Complete();
             }
 
-            return spectrums.ToArray();
+            return spectrums;
         }
 
         public void Dispose()

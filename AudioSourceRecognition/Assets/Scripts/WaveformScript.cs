@@ -55,8 +55,6 @@ public class WaveformScript : MonoBehaviour
     // Update is called once per frame
     public void OnRenderObject()
     {
-        var resolution = Screen.currentResolution;
-
         if (!recorder.IsRecording) return;
 
         var waveform = recorder.GetData();

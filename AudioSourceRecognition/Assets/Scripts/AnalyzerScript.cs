@@ -2,32 +2,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ExternalLibrary;
+using Unity.Collections;
 
 public class AnalyzerScript : MonoBehaviour
 {
     [SerializeField]
     GameObject recordObject;
 
+    [SerializeField]
+    float aspect = 6;
+
     RecordManager recorder;
 
     [SerializeField]
-    int startSample = 1024;
+    int startSample = 65536;
 
     [SerializeField]
-    int fourierCount = 7;
+    int fourierCount = 1;
 
-    BlackmanHarrisWindow[] windows;
+    BlackmanHarrisWindow windows;
 
-    FourierTransform[] fft;
+    FourierTransform fft;
+
+    NativeArray<float> fourier;
+
+    List<Vector3[]> vertices = new List<Vector3[]>();
+
+    LineRenderer line;
+
+    Vector3[] TemplateVector { get; set; }
+
 
     void InitializeWindow()
     {
-        windows = new BlackmanHarrisWindow[fourierCount];
-        fft = new FourierTransform[fourierCount];
-        for (int i = 0; i < fourierCount; ++i)
+        windows = new BlackmanHarrisWindow(startSample, recorder.SamplingRate);
+        fft = new FourierTransform(recorder.SamplingRate, windows);
+        vertices = new List<Vector3[]>();
+
+        float offset = aspect;
+        float xdiff = aspect * 2f / (float)startSample;
+
+        TemplateVector = new Vector3[startSample];
+        for (int i = 0; i < TemplateVector.Length; ++i)
         {
-            windows[i] = new BlackmanHarrisWindow(startSample << i, recorder.SamplingRate);
-            fft[i] = new FourierTransform(startSample << i, windows[i]);
+            TemplateVector[i] = new Vector3(i * xdiff - offset, 0f, 0f);
         }
     }
 
@@ -35,6 +53,9 @@ public class AnalyzerScript : MonoBehaviour
     void Start()
     {
         recorder = recordObject.GetComponent<RecordManager>();
+        line = GetComponent<LineRenderer>();
+        line.startWidth = 0.01f;
+        line.endWidth = 0.01f;
     }
 
     public void InvokeAnalyze()
@@ -52,20 +73,36 @@ public class AnalyzerScript : MonoBehaviour
 
         var buffer = recorder.GetData();
 
-        for (int i = 0; i < fourierCount; ++i)
+        // フーリエのバッファに蓄えさせる
+        fourier = fft.FFT(buffer);
+    }
+
+    public void OnRenderObject()
+    {
+        if (!recorder.IsRecording) return;
+
+        float offset = aspect;
+        float xdiff = aspect * 2f / (float)startSample;
+
+        Vector3[] previours = new Vector3[line.positionCount + startSample];
+        line.GetPositions(previours);
+
+        for (int i = 0; i < fourier.Length; ++i)
         {
-            // フーリエのバッファに蓄えさせる
-            fft[i].FFT(buffer);
+            previours[line.positionCount + i] = new Vector3(
+                i * xdiff - offset,
+                fourier[i],
+                Time.realtimeSinceStartup);
         }
+
+        line.positionCount = previours.Length;
+        line.SetPositions(previours);
     }
 
     private void OnDestroy()
     {
-        for (int i = 0; i < fourierCount; ++i)
-        {
-            windows[i].Dispose();
-            fft[i].Dispose();
-        }
+        windows.Dispose();
+        fft.Dispose();
     }
 }
 
