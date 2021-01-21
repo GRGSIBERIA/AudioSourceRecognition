@@ -26,7 +26,7 @@ public class SpectrumObjectScript : MonoBehaviour
         line.positionCount = SampleN;
         pos = new Vector3[SampleN];
 
-        xdiff = Aspect * 2f / (float)SampleN;
+        xdiff = Aspect * 2f / (float)(SampleN >> 1);
         offset = Aspect;
 
         ts = transform;
@@ -42,13 +42,15 @@ public class SpectrumObjectScript : MonoBehaviour
     {
         if (!Recorder.IsRecording) return;
 
-        for (int i = 0; i < SampleN; ++i)
+        float maximum = 1f / Mathf.Max(Spectrums);
+
+        for (int i = 0; i < SampleN >> 1; ++i)
         {
             if (!(float.IsInfinity(Spectrums[i]) || float.IsNaN(Spectrums[i])))
             {
                 pos[i] = new Vector3(
                 (float)i * xdiff - offset,
-                Mathf.Log(Spectrums[i]),
+                Spectrums[i] * maximum,
                 0f);
             }
             else
