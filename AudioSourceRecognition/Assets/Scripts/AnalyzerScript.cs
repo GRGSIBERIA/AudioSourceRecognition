@@ -15,12 +15,20 @@ public class AnalyzerScript : MonoBehaviour
     GameObject fftSampleObject;
 
     [SerializeField]
+    GameObject fftWindowShiftTimeObject;
+
+    [SerializeField]
     GameObject fourierPrefab;
 
     int sampleN = 8192;
+    int windowShiftTime = 1;
+    int shiftSample;    // 1シフトごとのサンプル点数
 
     float aspect = 6f;
 
+
+    float[][] shiftData;
+    float[][] shiftSpectrums;
     float[] spectrums;
     float[] pastSpectrums;
 
@@ -30,16 +38,30 @@ public class AnalyzerScript : MonoBehaviour
 
     Transform ts;
 
-    AbstractWindow wf;
-    FourierTransform fft;
+    AbstractWindow[] wf;
+    FourierTransform[] fft;
 
 
     void InitializeWindow()
     {
         spectrums = new float[sampleN];
         pastSpectrums = new float[sampleN];
-        wf = new HammingWindow(sampleN, recorder.SamplingRate);
-        fft = new FourierTransform(sampleN, wf);
+
+        wf = new AbstractWindow[windowShiftTime];// (sampleN, recorder.SamplingRate);
+        fft = new FourierTransform[windowShiftTime]; //(sampleN, wf);
+
+        shiftData = new float[windowShiftTime][];
+        shiftSpectrums = new float[windowShiftTime][];
+
+        for (int i = 0; i < windowShiftTime; ++i)
+        {
+            wf[i] = new HannWindow(sampleN, recorder.SamplingRate);
+            fft[i] = new FourierTransform(sampleN, wf[i]);
+            shiftData[i] = new float[sampleN];
+            shiftSpectrums[i] = new float[sampleN];
+        }
+        
+        shiftSample = sampleN / windowShiftTime;
     }
 
     // Start is called before the first frame update
@@ -48,10 +70,15 @@ public class AnalyzerScript : MonoBehaviour
         ts = GetComponent<Transform>();
         recorder = recordObject.GetComponent<RecordManager>();
         var fftSample = fftSampleObject.GetComponent<InputField>();
+        var windowShift = fftWindowShiftTimeObject.GetComponent<InputField>();
 
         if (!int.TryParse(fftSample.text, out sampleN))
         {
             throw new ArgumentException("Invalid fft sample text.");
+        }
+        if (!int.TryParse(windowShift.text, out windowShiftTime))
+        {
+            throw new ArgumentException("Invalid window shift time.");
         }
 
         GameObject inst = Instantiate(fourierPrefab, ts);
@@ -76,17 +103,27 @@ public class AnalyzerScript : MonoBehaviour
         if (sound.clip == null || !recorder.IsRecording) return;
 
         float[] data = recorder.GetData();
-        fft.FFT(data).CopyTo(spectrums);
-        
-        // ここで過去のデータにする
-        Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
-        Array.Copy(spectrums, 0, pastSpectrums, 0, sampleN);
+        for (int i = 0; i < windowShiftTime; ++i)
+            Array.Copy(data, data.Length - shiftSample * i - sampleN - 1, shiftData[i], 0, sampleN);
+
+        for (int i = 0; i < windowShiftTime; ++i)
+            fft[i].FFT(shiftData[i]).CopyTo(shiftSpectrums[i]);
+
+        //fft.FFT(data).CopyTo(spectrums);
+
+        //Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
+        //Array.Copy(spectrums, 0, pastSpectrums, 0, sampleN);
     }
 
     private void OnDestroy()
     {
-        if (wf != null) wf.Dispose();
-        if (fft != null) fft.Dispose();
+        if (wf == null || fft == null) return;
+
+        for (int i = 0; i < windowShiftTime; ++i)
+        {
+            wf[i].Dispose();
+            fft[i].Dispose();
+        }
     }
 }
 

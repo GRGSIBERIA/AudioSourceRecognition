@@ -247,6 +247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   recordObject: {fileID: 1030527523}
   fftSampleObject: {fileID: 1129611191}
+  fftWindowShiftTimeObject: {fileID: 1263836571}
   fourierPrefab: {fileID: 9055529920072198807, guid: 6ea0c1d8f6b0ae34d9265d9bcc2dd96f, type: 3}
 --- !u!1 &70545134
 GameObject:
