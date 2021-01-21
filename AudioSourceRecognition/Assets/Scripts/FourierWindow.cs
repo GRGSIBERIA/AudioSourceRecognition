@@ -46,7 +46,7 @@ namespace ExternalLibrary
             int logN = (int)Mathf.Log(N, 2f);
             int powN = (int)Mathf.Pow(2f, logN);
 
-            if (powN != N) throw new ArgumentException("N is not powered by 2.");
+            if (powN != N) throw new ArgumentException($"N is not powered by 2^N : {powN}");
 
             this.block = powN / avx;
             this.length = powN;

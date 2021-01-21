@@ -26,9 +26,9 @@ public class AnalyzerScript : MonoBehaviour
 
     float aspect = 6f;
 
-
+    
     float[][] shiftData;
-    float[][] shiftSpectrums;
+    NativeArray<float>[] shiftSpectrums;
     float[] spectrums;
     float[] pastSpectrums;
 
@@ -44,35 +44,12 @@ public class AnalyzerScript : MonoBehaviour
 
     void InitializeWindow()
     {
-        spectrums = new float[sampleN];
-        pastSpectrums = new float[sampleN];
-
-        wf = new AbstractWindow[windowShiftTime];// (sampleN, recorder.SamplingRate);
-        fft = new FourierTransform[windowShiftTime]; //(sampleN, wf);
-
-        shiftData = new float[windowShiftTime][];
-        shiftSpectrums = new float[windowShiftTime][];
-
-        for (int i = 0; i < windowShiftTime; ++i)
-        {
-            wf[i] = new HannWindow(sampleN, recorder.SamplingRate);
-            fft[i] = new FourierTransform(sampleN, wf[i]);
-            shiftData[i] = new float[sampleN];
-            shiftSpectrums[i] = new float[sampleN];
-        }
-        
-        shiftSample = sampleN / windowShiftTime;
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        ts = GetComponent<Transform>();
-        recorder = recordObject.GetComponent<RecordManager>();
+        // sampleNの数をここで合わせる
         var fftSample = fftSampleObject.GetComponent<InputField>();
         var windowShift = fftWindowShiftTimeObject.GetComponent<InputField>();
 
-        if (!int.TryParse(fftSample.text, out sampleN))
+        int power;
+        if (!int.TryParse(fftSample.text, out power))
         {
             throw new ArgumentException("Invalid fft sample text.");
         }
@@ -80,11 +57,38 @@ public class AnalyzerScript : MonoBehaviour
         {
             throw new ArgumentException("Invalid window shift time.");
         }
+        sampleN = 1 << power; // 2^Nであるかを聞いているから、その答えをここに
 
+        spectrums = new float[sampleN];
+        pastSpectrums = new float[sampleN];
+
+        wf = new AbstractWindow[windowShiftTime];// (sampleN, recorder.SamplingRate);
+        fft = new FourierTransform[windowShiftTime]; //(sampleN, wf);
+
+        shiftData = new float[windowShiftTime][];
+        shiftSpectrums = new NativeArray<float>[windowShiftTime];
+
+        for (int i = 0; i < windowShiftTime; ++i)
+        {
+            wf[i] = new HannWindow(sampleN, recorder.SamplingRate);
+            fft[i] = new FourierTransform(sampleN, wf[i]);
+            shiftData[i] = new float[sampleN];
+            //shiftSpectrums[i] = new float[sampleN];
+        }
+        
+        shiftSample = sampleN / windowShiftTime;
+
+        fourier.Setup(sampleN);     // スペクトログラムの初期化
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        ts = GetComponent<Transform>();
+        recorder = recordObject.GetComponent<RecordManager>();
+        
         GameObject inst = Instantiate(fourierPrefab, ts);
         fourier = inst.GetComponent<SpectrumObjectScript>();
-        fourier.SampleN = sampleN;
-        fourier.Spectrums = new float[sampleN];
         fourier.Aspect = aspect;
         fourier.Recorder = recorder;
     }
@@ -107,12 +111,22 @@ public class AnalyzerScript : MonoBehaviour
             Array.Copy(data, data.Length - shiftSample * i - sampleN - 1, shiftData[i], 0, sampleN);
 
         for (int i = 0; i < windowShiftTime; ++i)
-            fft[i].FFT(shiftData[i]).CopyTo(shiftSpectrums[i]);
+        {
+            shiftSpectrums[i] = fft[i].FFT(shiftData[i]);
+        }
+        for (int i = 0; i < windowShiftTime; ++i)
+        {
+            for (int j = 0; j < sampleN; ++j)
+                spectrums[j] += shiftSpectrums[i][j];
+        }
+        float inv = 1f / (float)windowShiftTime;
+        for (int i = 0; i < sampleN; ++i)
+            spectrums[i] *= inv;
 
         //fft.FFT(data).CopyTo(spectrums);
 
-        //Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
-        //Array.Copy(spectrums, 0, pastSpectrums, 0, sampleN);
+        Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
+        Array.Copy(spectrums, 0, pastSpectrums, 0, sampleN);
     }
 
     private void OnDestroy()

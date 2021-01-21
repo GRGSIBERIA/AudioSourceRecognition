@@ -18,18 +18,25 @@ public class SpectrumObjectScript : MonoBehaviour
     LineRenderer line;
     float xdiff;
     float offset;
+    int uniqueSamples;
 
     // Start is called before the first frame update
     void Start()
     {
         line = GetComponent<LineRenderer>();
-        line.positionCount = SampleN;
-        pos = new Vector3[SampleN];
+        SampleN = 1;
+        ts = transform;
+    }
 
+    public void Setup(int sampleN)
+    {
+        SampleN = sampleN;
+        uniqueSamples = sampleN >> 1;
         xdiff = Aspect * 2f / (float)(SampleN >> 1);
         offset = Aspect;
-
-        ts = transform;
+        Spectrums = new float[sampleN];
+        pos = new Vector3[uniqueSamples];
+        line.positionCount = uniqueSamples;
     }
 
     // Update is called once per frame
@@ -44,7 +51,7 @@ public class SpectrumObjectScript : MonoBehaviour
 
         float maximum = 1f / Mathf.Max(Spectrums);
 
-        for (int i = 0; i < SampleN >> 1; ++i)
+        for (int i = 0; i < uniqueSamples; ++i)
         {
             if (!(float.IsInfinity(Spectrums[i]) || float.IsNaN(Spectrums[i])))
             {
