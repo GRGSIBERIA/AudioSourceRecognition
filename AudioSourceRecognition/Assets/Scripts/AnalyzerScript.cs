@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using ExternalLibrary;
 using Unity.Collections;
 using System;
@@ -11,9 +12,11 @@ public class AnalyzerScript : MonoBehaviour
     GameObject recordObject;
 
     [SerializeField]
-    GameObject fourierPrefab;
+    GameObject fftSampleObject;
 
     [SerializeField]
+    GameObject fourierPrefab;
+
     int sampleN = 8192;
 
     float aspect = 6f;
@@ -30,6 +33,7 @@ public class AnalyzerScript : MonoBehaviour
     AbstractWindow wf;
     FourierTransform fft;
 
+
     void InitializeWindow()
     {
         spectrums = new float[sampleN];
@@ -43,6 +47,12 @@ public class AnalyzerScript : MonoBehaviour
     {
         ts = GetComponent<Transform>();
         recorder = recordObject.GetComponent<RecordManager>();
+        var fftSample = fftSampleObject.GetComponent<InputField>();
+
+        if (!int.TryParse(fftSample.text, out sampleN))
+        {
+            throw new ArgumentException("Invalid fft sample text.");
+        }
 
         GameObject inst = Instantiate(fourierPrefab, ts);
         fourier = inst.GetComponent<SpectrumObjectScript>();
