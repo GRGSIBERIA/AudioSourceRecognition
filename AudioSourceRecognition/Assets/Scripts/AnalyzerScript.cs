@@ -34,7 +34,7 @@ public class AnalyzerScript : MonoBehaviour
     {
         spectrums = new float[sampleN];
         pastSpectrums = new float[sampleN];
-        wf = new RectangleWindow(sampleN, recorder.SamplingRate);
+        wf = new HammingWindow(sampleN, recorder.SamplingRate);
         fft = new FourierTransform(sampleN, wf);
     }
 
@@ -71,6 +71,12 @@ public class AnalyzerScript : MonoBehaviour
         // ここで過去のデータにする
         Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
         Array.Copy(spectrums, 0, pastSpectrums, 0, sampleN);
+    }
+
+    private void OnDestroy()
+    {
+        if (wf != null) wf.Dispose();
+        if (fft != null) fft.Dispose();
     }
 }
 
