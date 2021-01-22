@@ -63,7 +63,8 @@ public class SpectrumObjectScript : MonoBehaviour
             Spectrums[i] = 20f * Mathf.Log10(Spectrums[i]);
         }
 
-        float maximum = 1f / Mathf.Max(Spectrums);
+        float maximum = 1f / Mathf.Min(Spectrums);
+        
 
         for (int i = 0; i < uniqueSamples; ++i)
         {
