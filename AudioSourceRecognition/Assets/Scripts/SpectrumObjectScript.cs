@@ -53,20 +53,10 @@ public class SpectrumObjectScript : MonoBehaviour
 
         for (int i = 0; i < uniqueSamples; ++i)
         {
-            if (!(float.IsInfinity(Spectrums[i]) || float.IsNaN(Spectrums[i])))
-            {
-                pos[i] = new Vector3(
-                (float)i * xdiff - offset,
-                Spectrums[i] * maximum,
-                0f);
-            }
-            else
-            {
-                pos[i] = new Vector3(
-                    (float)i * xdiff - offset,
-                    0f,
-                    0f);
-            }
+            pos[i] = new Vector3(
+            (float)i * xdiff - offset,
+            Spectrums[i] * maximum,
+            0f);
         }
         line.SetPositions(pos);
     }

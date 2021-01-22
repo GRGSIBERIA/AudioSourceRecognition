@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using ExternalLibrary;
 using Unity.Collections;
 using System;
+using Unity.Burst;
+using Unity.Jobs;
 
 public class AnalyzerScript : MonoBehaviour
 {
@@ -98,6 +100,26 @@ public class AnalyzerScript : MonoBehaviour
         InitializeWindow();
     }
 
+    /// <summary>
+    /// スペクトルの加算平均を求める
+    /// </summary>
+    void AverageSpectrums()
+    {
+        for (int i = 0; i < sampleN; ++i)
+            spectrums[i] = 0f;
+
+        for (int i = 0; i < windowShiftTime; ++i)
+        {
+            for (int j = 0; j < sampleN; ++j)
+                spectrums[j] += shiftSpectrums[i][j];
+        }
+
+        float inv = 1f / (float)windowShiftTime;
+
+        for (int i = 0; i < sampleN; ++i)
+            spectrums[i] *= inv;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -114,15 +136,8 @@ public class AnalyzerScript : MonoBehaviour
         {
             shiftSpectrums[i] = fft[i].FFT(shiftData[i]);
         }
-        for (int i = 0; i < windowShiftTime; ++i)
-        {
-            for (int j = 0; j < sampleN; ++j)
-                spectrums[j] += shiftSpectrums[i][j];
-        }
-        float inv = 1f / (float)windowShiftTime;
-        for (int i = 0; i < sampleN; ++i)
-            spectrums[i] *= inv;
 
+        AverageSpectrums();
         //fft.FFT(data).CopyTo(spectrums);
 
         Array.Copy(spectrums, 0, fourier.Spectrums, 0, sampleN);
