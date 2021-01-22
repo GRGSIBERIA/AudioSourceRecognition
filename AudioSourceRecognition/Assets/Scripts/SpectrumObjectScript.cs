@@ -46,6 +46,11 @@ public class SpectrumObjectScript : MonoBehaviour
 
     public void OnRenderObject()
     {
+        if (Recorder == null)
+        {
+            isInitialized = false;
+            return;
+        }
         if (!Recorder.IsRecording)
         {
             isInitialized = false;

@@ -89,10 +89,15 @@ public class AnalyzerScript : MonoBehaviour
         ts = GetComponent<Transform>();
         recorder = recordObject.GetComponent<RecordManager>();
         
+        // フーリエ変換の波形をレンダリングする
         GameObject inst = Instantiate(fourierPrefab, ts);
-        fourier = inst.GetComponent<SpectrumObjectScript>();
+        fourier = inst.GetComponentInChildren<SpectrumObjectScript>();
         fourier.Aspect = aspect;
         fourier.Recorder = recorder;
+
+        // フーリエ変換の軸をレンダリングする
+        var axis = inst.GetComponentInChildren<AxisScript>();
+        axis.Aspect = aspect;
     }
 
     public void InvokeAnalyze()
