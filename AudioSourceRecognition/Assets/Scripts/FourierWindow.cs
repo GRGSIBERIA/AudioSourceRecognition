@@ -31,6 +31,8 @@ namespace ExternalLibrary
         private NativeArray<float> window;
         private NativeArray<float> windowed;
 
+        const int batch = 512;
+
         /// <summary>
         /// 窓掛け後の長さを返す
         /// </summary>
@@ -44,7 +46,7 @@ namespace ExternalLibrary
             int logN = (int)Mathf.Log(N, 2f);
             int powN = (int)Mathf.Pow(2f, logN);
 
-            if (powN != N) throw new ArgumentException("N is not powered by 2.");
+            if (powN != N) throw new ArgumentException($"N is not powered by 2^N : {powN}");
 
             this.block = powN / avx;
             this.length = powN;
@@ -106,7 +108,7 @@ namespace ExternalLibrary
                 window = this.window,
                 windowed = this.windowed
             };
-            handles = job.Schedule(this.length, 256);
+            handles = job.Schedule(this.length, batch);
             JobHandle.ScheduleBatchedJobs();
             handles.Complete();
 

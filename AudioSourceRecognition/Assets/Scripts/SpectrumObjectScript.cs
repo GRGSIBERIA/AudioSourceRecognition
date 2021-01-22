@@ -11,26 +11,31 @@ public class SpectrumObjectScript : MonoBehaviour
 
     Transform ts;
 
+    public RecordManager Recorder { get; set; }
+
+    LineRenderer line;
+    float xdiff;
+    float offset;
+    int uniqueSamples;
+    bool isInitialized = false;
+
     // Start is called before the first frame update
     void Start()
     {
-        var line = GetComponent<LineRenderer>();
-        line.positionCount = SampleN;
-        Vector3[] pos = new Vector3[SampleN];
-
-        float xdiff = Aspect * 2f / (float)SampleN;
-        float offset = Aspect;
-
-        for (int i = 0; i < SampleN; ++i)
-        {
-            pos[i] = new Vector3(
-                (float)i * xdiff - offset,
-                Mathf.Log10(Spectrums[i]),
-                Time.time);
-        }
-        line.SetPositions(pos);
-
+        line = GetComponent<LineRenderer>();
+        SampleN = 1;
         ts = transform;
+    }
+
+    public void Setup(int sampleN)
+    {
+        SampleN = sampleN;
+        uniqueSamples = sampleN >> 1;
+        xdiff = Aspect * 2f / (float)(uniqueSamples);
+        offset = Aspect;
+        Spectrums = new float[sampleN];
+        line.positionCount = uniqueSamples;
+        isInitialized = true;
     }
 
     // Update is called once per frame
@@ -41,6 +46,26 @@ public class SpectrumObjectScript : MonoBehaviour
 
     public void OnRenderObject()
     {
-        
+        if (Recorder == null)
+        {
+            isInitialized = false;
+            return;
+        }
+        if (!Recorder.IsRecording)
+        {
+            isInitialized = false;
+            return;
+        }
+
+        float maximum = 1f / Mathf.Max(Spectrums);
+
+        for (int i = 0; i < uniqueSamples; ++i)
+        {
+            line.SetPosition(i, 
+                new Vector3(
+                    (float)i * xdiff - offset,
+                    Spectrums[i] * maximum,
+                    0f));
+        }
     }
 }
