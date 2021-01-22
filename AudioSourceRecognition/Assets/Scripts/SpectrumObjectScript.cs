@@ -11,14 +11,13 @@ public class SpectrumObjectScript : MonoBehaviour
 
     Transform ts;
 
-    Vector3[] pos;
-
     public RecordManager Recorder { get; set; }
 
     LineRenderer line;
     float xdiff;
     float offset;
     int uniqueSamples;
+    bool isInitialized = false;
 
     // Start is called before the first frame update
     void Start()
@@ -32,11 +31,11 @@ public class SpectrumObjectScript : MonoBehaviour
     {
         SampleN = sampleN;
         uniqueSamples = sampleN >> 1;
-        xdiff = Aspect * 2f / (float)(SampleN >> 1);
+        xdiff = Aspect * 2f / (float)(uniqueSamples);
         offset = Aspect;
         Spectrums = new float[sampleN];
-        pos = new Vector3[uniqueSamples];
         line.positionCount = uniqueSamples;
+        isInitialized = true;
     }
 
     // Update is called once per frame
@@ -47,17 +46,21 @@ public class SpectrumObjectScript : MonoBehaviour
 
     public void OnRenderObject()
     {
-        if (!Recorder.IsRecording) return;
+        if (!Recorder.IsRecording)
+        {
+            isInitialized = false;
+            return;
+        }
 
         float maximum = 1f / Mathf.Max(Spectrums);
 
         for (int i = 0; i < uniqueSamples; ++i)
         {
-            pos[i] = new Vector3(
-            (float)i * xdiff - offset,
-            Spectrums[i] * maximum,
-            0f);
+            line.SetPosition(i, 
+                new Vector3(
+                    (float)i * xdiff - offset,
+                    Spectrums[i] * maximum,
+                    0f));
         }
-        line.SetPositions(pos);
     }
 }

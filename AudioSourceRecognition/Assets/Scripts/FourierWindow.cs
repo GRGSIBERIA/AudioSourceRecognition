@@ -45,6 +45,7 @@ namespace ExternalLibrary
             this.spfreq = spfreq;
             int logN = (int)Mathf.Log(N, 2f);
             int powN = (int)Mathf.Pow(2f, logN);
+            Debug.Log(powN);
 
             if (powN != N) throw new ArgumentException($"N is not powered by 2^N : {powN}");
 
