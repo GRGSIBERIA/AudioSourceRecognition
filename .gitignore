@@ -71,3 +71,4 @@ GuitarRecognition/GuitarRecognition/App/GuitarRecognition(debug)_log.html
 *.log
 *.obj
 *.idb
+*.exe

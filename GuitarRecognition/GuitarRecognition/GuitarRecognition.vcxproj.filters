@@ -97,6 +97,12 @@
     <Filter Include="Resource Files\example\zip">
       <UniqueIdentifier>{81d8d80c-f0ce-492f-8fee-c5502c31bc0e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\TinyASIO">
+      <UniqueIdentifier>{76444539-d759-421b-9943-8367096684ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Interface">
+      <UniqueIdentifier>{0cbf8201-03bd-4c26-8453-2d51968b5283}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -374,5 +380,46 @@
     <Xml Include="App\example\config\config.xml">
       <Filter>Resource Files\example\config</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TinyASIO\Buffer.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\Channel.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\ControllerBase.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\Driver.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\Exception.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\InputBackController.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\InputOnlyController.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\Interface.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\Option.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\Registry.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\SDK.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="TinyASIO\TinyASIO.hpp">
+      <Filter>Header Files\TinyASIO</Filter>
+    </ClInclude>
+    <ClInclude Include="DriverDropdown.hpp">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
