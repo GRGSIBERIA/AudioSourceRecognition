@@ -24,8 +24,9 @@ public:
 
 	const String& getIndex() const { return list[selector]; }
 
-	bool draw(const Vec2& pos)
+	const RectF draw(const Vec2& pos)
 	{
-		return SimpleGUI::RadioButtons(selector, list, pos);
+		SimpleGUI::RadioButtons(selector, list, pos);
+		return SimpleGUI::RadioButtonsRegion(list, pos);
 	}
 };

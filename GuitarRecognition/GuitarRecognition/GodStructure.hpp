@@ -13,6 +13,10 @@ public:
 
 	DriverPathDropdown driver;
 
+	TextEditState samplingFrequencyText;
+	TextEditState madohabaText;
+	TextEditState shiftTimeText;
+
 	GodStructure()
 		: font24(Font(24)), font18(Font(18)), font14(Font(14))
 	{

@@ -1,0 +1,14 @@
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\bin\Debug\GuitarRecorder.exe.config
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\bin\Debug\GuitarRecorder.exe
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\bin\Debug\GuitarRecorder.pdb
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.csprojAssemblyReference.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.GuitarRecogApp.resources
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.Properties.Resources.resources
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.csproj.GenerateResource.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.csproj.CoreCompileInputs.cache
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.exe
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.pdb
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\bin\Debug\NAudio.dll
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\bin\Debug\NAudio.xml
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.Settings.resources
+C:\Users\EIICHI\Documents\GitHub\AudioSourceRecognition\GuitarRecognition\GuitarRecorder\obj\Debug\GuitarRecorder.csproj.CopyComplete
