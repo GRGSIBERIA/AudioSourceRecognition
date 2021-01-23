@@ -32,7 +32,7 @@ namespace GuitarRecorder
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.ファイルFToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.設定CToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonAnalyze = new System.Windows.Forms.Button();
             this.comboBoxInputDevice = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.comboBoxInputChannel = new System.Windows.Forms.ComboBox();
@@ -69,14 +69,15 @@ namespace GuitarRecorder
             this.設定CToolStripMenuItem.Text = "設定 (&C)";
             this.設定CToolStripMenuItem.Click += new System.EventHandler(this.設定CToolStripMenuItem_Click);
             // 
-            // button1
+            // buttonAnalyze
             // 
-            this.button1.Location = new System.Drawing.Point(12, 132);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "解析";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonAnalyze.Location = new System.Drawing.Point(12, 132);
+            this.buttonAnalyze.Name = "buttonAnalyze";
+            this.buttonAnalyze.Size = new System.Drawing.Size(75, 23);
+            this.buttonAnalyze.TabIndex = 1;
+            this.buttonAnalyze.Text = "解析";
+            this.buttonAnalyze.UseVisualStyleBackColor = true;
+            this.buttonAnalyze.Click += new System.EventHandler(this.buttonAnalyze_Click);
             // 
             // comboBoxInputDevice
             // 
@@ -103,6 +104,7 @@ namespace GuitarRecorder
             this.comboBoxInputChannel.Name = "comboBoxInputChannel";
             this.comboBoxInputChannel.Size = new System.Drawing.Size(49, 20);
             this.comboBoxInputChannel.TabIndex = 4;
+            this.comboBoxInputChannel.SelectedIndexChanged += new System.EventHandler(this.comboBoxInputChannel_SelectedIndexChanged);
             // 
             // label2
             // 
@@ -162,7 +164,7 @@ namespace GuitarRecorder
             this.Controls.Add(this.comboBoxInputChannel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.comboBoxInputDevice);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonAnalyze);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "GuitarRecogApp";
@@ -179,7 +181,7 @@ namespace GuitarRecorder
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem ファイルFToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 設定CToolStripMenuItem;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonAnalyze;
         private System.Windows.Forms.ComboBox comboBoxInputDevice;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox comboBoxInputChannel;
