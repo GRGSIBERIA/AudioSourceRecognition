@@ -421,5 +421,11 @@
     <ClInclude Include="DriverDropdown.hpp">
       <Filter>Header Files\Interface</Filter>
     </ClInclude>
+    <ClInclude Include="State.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GodStructure.hpp">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
