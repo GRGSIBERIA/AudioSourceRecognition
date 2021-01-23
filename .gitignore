@@ -62,3 +62,12 @@ crashlytics-build.properties
 *.ninja
 *.cache
 *.lref
+*.tlog
+GuitarRecognition/GuitarRecognition/App/GuitarRecognition(debug)_log.html
+*.ilk
+*.lib
+*.exp
+*.recipe
+*.log
+*.obj
+*.idb
