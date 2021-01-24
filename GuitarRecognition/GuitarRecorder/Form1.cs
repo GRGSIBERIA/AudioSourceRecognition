@@ -9,15 +9,18 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using NAudio.Mixer;
 
 namespace GuitarRecorder
 {
     public partial class GuitarRecogApp : Form
     {
-        AsioOut device = null;
         WaveFormat format;
+
+        WaveIn input;
+        WaveInCapabilities capability;
+        MixerLine mixer;
         BufferedWaveProvider provider;
-        WaveStream stream;
 
         bool isAnalyzing = false;
 
@@ -25,18 +28,19 @@ namespace GuitarRecorder
         {
             int frequency = int.Parse(textBoxSamplingFrequency.Text);
             int bits = int.Parse(textBoxBits.Text);
-            format = new WaveFormat(int.Parse(textBoxSamplingFrequency.Text), bits, 1);
+            format = new WaveFormat(frequency, bits, 1);
         }
 
         public GuitarRecogApp()
         {
             InitializeComponent();
 
-            // デバイスの一覧を取得
-            foreach (var name in AsioOut.GetDriverNames())
-            {
-                comboBoxInputDevice.Items.Add(name);
-            }
+            input = new WaveIn();
+            mixer = input.GetMixerLine();
+            input.DataAvailable += new EventHandler<WaveInEventArgs>(CanBuffering);
+
+            for (int i = 0; i < WaveIn.DeviceCount; ++i)
+                comboBoxInputDevice.Items.Add(WaveIn.GetCapabilities(i).ProductName);
         }
 
         private void 設定CToolStripMenuItem_Click(object sender, EventArgs e)
@@ -47,31 +51,11 @@ namespace GuitarRecorder
 
         private void comboBoxInputDevice_DataSourceChanged(object sender, EventArgs e)
         {
-            // 選択されたデバイスを探索して、使用デバイスとして登録する
-            foreach (var name in AsioOut.GetDriverNames())
-            {
-                if (comboBoxInputDevice.Text == name)
-                {
-                    try
-                    {
-                        device = new AsioOut(name);
-                    }
-                    catch
-                    {
-                        MessageBox.Show("使用可能なドライバを選択してください", "有効なドライバではありません");
-                        return;
-                    }
-                    break;
-                }
-            }
+            comboBoxInputChannel.Items.Clear();
+            capability = WaveIn.GetCapabilities(comboBoxInputDevice.SelectedIndex);
 
-            if (device != null)
-            {
-                comboBoxInputChannel.Items.Clear();
-                for (int i = 0; i < device.NumberOfInputChannels; ++i)
-                    comboBoxInputChannel.Items.Add(device.AsioInputChannelName(i));
-                device.InputChannelOffset = 0;  // デフォルトでは0番
-            }
+            for (int i = 0; i < capability.Channels; ++i)
+                comboBoxInputChannel.Items.Add(i.ToString());
         }
 
         private void wavefromSetting_DataSourceChanged(object sender, EventArgs e)
@@ -83,41 +67,57 @@ namespace GuitarRecorder
         {
             if (!isAnalyzing)
             {
-                int samplingRate = int.Parse(textBoxSamplingFrequency.Text);
+                /**
+                if (device != null)
+                {
+                    device.Dispose();
+                    device = new AsioOut(comboBoxInputDevice.Text);
+                }
+
+                
+
+                stream = new WaveMixerStream32();
+                waveViewer.WaveStream = stream;
+                waveViewer.BackColor = Color.White;
+
+                // プロバイダを作成してデバイスを再生する
+                InitializeFormat();
+                provider = new BufferedWaveProvider(format);
+                device.Init(provider);  // デバイスを初期化
+                device.AudioAvailable += new EventHandler<AsioAudioAvailableEventArgs>(CanBuffering);
+                device.Play();
+                */
 
                 isAnalyzing = true;
                 buttonAnalyze.Text = "停止";
 
-                waveViewer.WaveStream = new WaveMixerStream32();
+                InitializeFormat();
 
-                // プロバイダを作成してデバイスを再生する
-                int samplingrate = int.Parse(textBoxSamplingFrequency.Text);
-                int bitrate = int.Parse(textBoxBits.Text);
-                provider = new BufferedWaveProvider(new WaveFormat(samplingrate, bitrate, 1));
-                device.Init(provider);  // デバイスを初期化
-                device.AudioAvailable += CanBuffering;
-                device.Play();
+                provider = new BufferedWaveProvider(format);
+                provider.DiscardOnBufferOverflow = true;
+
+                input.DeviceNumber = comboBoxInputDevice.SelectedIndex;
+                input.WaveFormat = format;
+                input.StartRecording();
             }
             else
             {
                 isAnalyzing = false;
                 buttonAnalyze.Text = "解析";
-
-                device.Stop();
-                device.AudioAvailable -= CanBuffering;  // ハンドラから削除する
+                input.StopRecording();
             }
         }
 
         private void comboBoxInputChannel_SelectedIndexChanged(object sender, EventArgs e)
         {
-            device.InputChannelOffset = comboBoxInputChannel.SelectedIndex;
+            //device.InputChannelOffset = comboBoxInputChannel.SelectedIndex;
         }
 
-        int testNum = 0;
+        int count = 0;
 
-        private void CanBuffering(object sender, EventArgs e)
+        private void CanBuffering(object sender, WaveInEventArgs e)
         {
-            Console.WriteLine($"{++testNum}");
+            provider.AddSamples(e.Buffer, 0, e.BytesRecorded);
         }
     }
 }

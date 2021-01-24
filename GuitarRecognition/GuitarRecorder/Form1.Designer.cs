@@ -42,6 +42,7 @@ namespace GuitarRecorder
             this.label4 = new System.Windows.Forms.Label();
             this.textBoxBits = new System.Windows.Forms.TextBox();
             this.waveViewer = new NAudio.Gui.WaveViewer();
+            this.labelBufferingTime = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -72,7 +73,7 @@ namespace GuitarRecorder
             // 
             // buttonAnalyze
             // 
-            this.buttonAnalyze.Location = new System.Drawing.Point(12, 76);
+            this.buttonAnalyze.Location = new System.Drawing.Point(12, 132);
             this.buttonAnalyze.Name = "buttonAnalyze";
             this.buttonAnalyze.Size = new System.Drawing.Size(75, 23);
             this.buttonAnalyze.TabIndex = 1;
@@ -103,7 +104,7 @@ namespace GuitarRecorder
             this.comboBoxInputChannel.FormattingEnabled = true;
             this.comboBoxInputChannel.Location = new System.Drawing.Point(462, 32);
             this.comboBoxInputChannel.Name = "comboBoxInputChannel";
-            this.comboBoxInputChannel.Size = new System.Drawing.Size(49, 20);
+            this.comboBoxInputChannel.Size = new System.Drawing.Size(114, 20);
             this.comboBoxInputChannel.TabIndex = 4;
             this.comboBoxInputChannel.SelectedIndexChanged += new System.EventHandler(this.comboBoxInputChannel_SelectedIndexChanged);
             // 
@@ -154,7 +155,7 @@ namespace GuitarRecorder
             // 
             // waveViewer
             // 
-            this.waveViewer.Location = new System.Drawing.Point(0, 118);
+            this.waveViewer.Location = new System.Drawing.Point(0, 202);
             this.waveViewer.Name = "waveViewer";
             this.waveViewer.SamplesPerPixel = 128;
             this.waveViewer.Size = new System.Drawing.Size(800, 150);
@@ -162,11 +163,21 @@ namespace GuitarRecorder
             this.waveViewer.TabIndex = 10;
             this.waveViewer.WaveStream = null;
             // 
+            // labelBufferingTime
+            // 
+            this.labelBufferingTime.AutoSize = true;
+            this.labelBufferingTime.Location = new System.Drawing.Point(327, 61);
+            this.labelBufferingTime.Name = "labelBufferingTime";
+            this.labelBufferingTime.Size = new System.Drawing.Size(92, 12);
+            this.labelBufferingTime.TabIndex = 11;
+            this.labelBufferingTime.Text = "バッファリング秒数=";
+            // 
             // GuitarRecogApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.labelBufferingTime);
             this.Controls.Add(this.waveViewer);
             this.Controls.Add(this.textBoxBits);
             this.Controls.Add(this.label4);
@@ -203,6 +214,7 @@ namespace GuitarRecorder
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox textBoxBits;
         private NAudio.Gui.WaveViewer waveViewer;
+        private System.Windows.Forms.Label labelBufferingTime;
     }
 }
 
