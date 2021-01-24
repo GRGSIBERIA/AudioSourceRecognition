@@ -51,7 +51,18 @@ namespace GuitarRecorder
             foreach (var name in AsioOut.GetDriverNames())
             {
                 if (comboBoxInputDevice.Text == name)
-                    device = new AsioOut(name);
+                {
+                    try
+                    {
+                        device = new AsioOut(name);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("使用可能なドライバを選択してください", "有効なドライバではありません");
+                        return;
+                    }
+                    break;
+                }
             }
 
             if (device != null)
@@ -81,7 +92,8 @@ namespace GuitarRecorder
 
                 // プロバイダを作成してデバイスを再生する
                 int samplingrate = int.Parse(textBoxSamplingFrequency.Text);
-                provider = new BufferedWaveProvider(new WaveFormat(samplingrate, 32, 1));
+                int bitrate = int.Parse(textBoxBits.Text);
+                provider = new BufferedWaveProvider(new WaveFormat(samplingrate, bitrate, 1));
                 device.Init(provider);  // デバイスを初期化
                 device.AudioAvailable += CanBuffering;
                 device.Play();

@@ -11,7 +11,7 @@ namespace GuitarRecorder
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
-        [STAThread]
+        [System.MTAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
