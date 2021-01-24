@@ -16,7 +16,8 @@ namespace GuitarRecorder
     {
         AsioOut device = null;
         WaveFormat format;
-        MixingWaveProvider32 provider;
+        BufferedWaveProvider provider;
+        WaveStream stream;
 
         bool isAnalyzing = false;
 
@@ -71,19 +72,40 @@ namespace GuitarRecorder
         {
             if (!isAnalyzing)
             {
+                int samplingRate = int.Parse(textBoxSamplingFrequency.Text);
+
                 isAnalyzing = true;
                 buttonAnalyze.Text = "停止";
+
+                waveViewer.WaveStream = new WaveMixerStream32();
+
+                // プロバイダを作成してデバイスを再生する
+                int samplingrate = int.Parse(textBoxSamplingFrequency.Text);
+                provider = new BufferedWaveProvider(new WaveFormat(samplingrate, 32, 1));
+                device.Init(provider);  // デバイスを初期化
+                device.AudioAvailable += CanBuffering;
+                device.Play();
             }
             else
             {
                 isAnalyzing = false;
                 buttonAnalyze.Text = "解析";
+
+                device.Stop();
+                device.AudioAvailable -= CanBuffering;  // ハンドラから削除する
             }
         }
 
         private void comboBoxInputChannel_SelectedIndexChanged(object sender, EventArgs e)
         {
             device.InputChannelOffset = comboBoxInputChannel.SelectedIndex;
+        }
+
+        int testNum = 0;
+
+        private void CanBuffering(object sender, EventArgs e)
+        {
+            Console.WriteLine($"{++testNum}");
         }
     }
 }
