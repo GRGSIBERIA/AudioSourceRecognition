@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
 using NAudio.Mixer;
+using NAudio.Wave.SampleProviders;
 
 namespace GuitarRecorder
 {
@@ -21,6 +22,7 @@ namespace GuitarRecorder
         WaveInCapabilities capability;
         MixerLine mixer;
         BufferedWaveProvider provider;
+        Pcm16BitToSampleProvider sample;
 
         bool isAnalyzing = false;
 
@@ -67,27 +69,6 @@ namespace GuitarRecorder
         {
             if (!isAnalyzing)
             {
-                /**
-                if (device != null)
-                {
-                    device.Dispose();
-                    device = new AsioOut(comboBoxInputDevice.Text);
-                }
-
-                
-
-                stream = new WaveMixerStream32();
-                waveViewer.WaveStream = stream;
-                waveViewer.BackColor = Color.White;
-
-                // プロバイダを作成してデバイスを再生する
-                InitializeFormat();
-                provider = new BufferedWaveProvider(format);
-                device.Init(provider);  // デバイスを初期化
-                device.AudioAvailable += new EventHandler<AsioAudioAvailableEventArgs>(CanBuffering);
-                device.Play();
-                */
-
                 isAnalyzing = true;
                 buttonAnalyze.Text = "停止";
 
@@ -95,6 +76,8 @@ namespace GuitarRecorder
 
                 provider = new BufferedWaveProvider(format);
                 provider.DiscardOnBufferOverflow = true;
+                provider.BufferDuration = new TimeSpan(1, 0, 0);
+                sample = new Pcm16BitToSampleProvider(provider);
 
                 input.DeviceNumber = comboBoxInputDevice.SelectedIndex;
                 input.WaveFormat = format;
@@ -112,8 +95,6 @@ namespace GuitarRecorder
         {
             //device.InputChannelOffset = comboBoxInputChannel.SelectedIndex;
         }
-
-        int count = 0;
 
         private void CanBuffering(object sender, WaveInEventArgs e)
         {

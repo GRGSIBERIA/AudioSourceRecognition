@@ -148,6 +148,7 @@ namespace GuitarRecorder
             // 
             this.textBoxBits.Location = new System.Drawing.Point(280, 58);
             this.textBoxBits.Name = "textBoxBits";
+            this.textBoxBits.ReadOnly = true;
             this.textBoxBits.Size = new System.Drawing.Size(41, 19);
             this.textBoxBits.TabIndex = 9;
             this.textBoxBits.Text = "16";
