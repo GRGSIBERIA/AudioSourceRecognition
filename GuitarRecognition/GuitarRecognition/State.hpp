@@ -36,7 +36,7 @@ bool stateOfSetup(GodStructure& god)
 
 	/* 繰り返しで表現している部分は関数でまとめた */
 
-	const auto rowBx = driversReg.tr().x + 8;	
+	const auto rowBx = driversReg.tr().x + 16;	
 	const auto samplingReg = HorizontalStatus(god.font24, U"サンプリング周波数 [Hz]", god.samplingFrequencyText, god.samplingFrequency, rowBx);
 	
 	const auto rowCx = samplingReg.tr().x + 16;
