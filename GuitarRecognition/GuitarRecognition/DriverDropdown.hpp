@@ -22,7 +22,22 @@ public:
 		}
 	}
 
-	const String& getIndex() const { return list[selector]; }
+	//const String& getIndex() const { return list[selector]; }
+
+	const String& getSelectedName() const { return list[selector]; }
+
+	bool setShownIndex(const String& name)
+	{
+		for (size_t i = 0; i < list.size(); ++i)
+		{
+			if (list[i] == name)
+			{
+				selector = i;
+				return true;
+			}
+		}
+		return false;
+	}
 
 	const RectF draw(const Vec2& pos)
 	{

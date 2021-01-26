@@ -53,6 +53,7 @@ bool stateOfSetup(GodStructure& god)
 	if (isSave)
 	{
 		// 保存ボタンがクリックされたら、選択中の設定を保存する
+		god.save();
 	}
 	
 	// 実行ボタン
