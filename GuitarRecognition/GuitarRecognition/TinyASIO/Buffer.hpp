@@ -114,6 +114,7 @@ namespace asio
 			});
 		}
 
+		int SampleSize() const { return sizeof(SampleType); }
 
 		/**
 		* バッファに値を蓄積する
@@ -317,18 +318,33 @@ namespace asio
 
 		void StartBuffering()
 		{
-			for (auto& in : inputBuffers)
-				in.StartBuffering();
-			for (auto& out : outputBuffers)
-				out.StartBuffering();
+			if (inputBuffers.size() > 0)
+			{
+				for (auto& in : inputBuffers)
+					in.StartBuffering();
+			}
+			if (outputBuffers.size() > 0)
+			{
+				for (auto& out : outputBuffers)
+					out.StartBuffering();
+			}
 		}
 
 		void StopBuffering()
 		{
-			for (auto& in : inputBuffers)
-				in.StopBuffering();
-			for (auto& out : outputBuffers)
-				out.StopBuffering();
+			// thisがヌルポだとDisposeしたときに落ちる
+			if (this == nullptr) return;
+
+			if (inputBuffers.size() > 0)
+			{
+				for (auto& in : inputBuffers)
+					in.StopBuffering();
+			}
+			if (outputBuffers.size() > 0)
+			{
+				for (auto& out : outputBuffers)
+					out.StopBuffering();
+			}
 		}
 
 		/**

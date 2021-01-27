@@ -2,7 +2,7 @@
 
 #include <Siv3D.hpp>
 #include "DriverDropdown.hpp"
-
+#include "InputController.hpp"
 
 struct GodStructure
 {
@@ -35,9 +35,14 @@ private:
 			ReadAsStore(data, U"God.SamplingFrequency", samplingFrequencyText, samplingFrequency);
 			ReadAsStore(data, U"God.Madohaba", madohabaText, madohaba, true);
 			ReadAsStore(data, U"God.ShiftTime", shiftTimeText, shiftTime, true);
+			ReadAsStore(data, U"God.TimeLength", timeLengthText, timeLength, false);
 
 			const auto drivername = data[U"God.SelectedDriverName"].getString();
 			driver.setShownIndex(drivername);
+
+			input = new InputController(drivername);
+			const auto channel = data[U"God.SelectedChannelName"].getString();
+			input->setShownIndex(channel);
 		}
 	}
 
@@ -52,7 +57,9 @@ private:
 				data.key(U"SamplingFrequency").write(samplingFrequency);
 				data.key(U"Madohaba").write(madohaba);
 				data.key(U"ShiftTime").write(shiftTime);
+				data.key(U"TimeLength").write(timeLength);
 				data.key(U"SelectedDriverName").write(driver.getSelectedName());
+				data.key(U"SelectedChannelName").write(input->selectedChannelName());
 			}
 			data.endObject();
 		}
@@ -64,20 +71,25 @@ private:
 		}
 	}
 
+	InputController* input = nullptr;
+
 public:
 	const Font font24;
 	const Font font18;
 	const Font font14;
 
 	DriverPathDropdown driver;
+	
 
 	TextEditState samplingFrequencyText;
 	TextEditState madohabaText;
 	TextEditState shiftTimeText;
+	TextEditState timeLengthText;
 
 	int samplingFrequency;
 	int madohaba;
 	int shiftTime;
+	int timeLength;
 
 	const String jsonpath = U"./config.json";
 
@@ -95,6 +107,13 @@ public:
 
 		// 2回目以降の起動で保存するようにしておく
 		ReadJsonFile();
+	}
+
+	// デストラクタでコントローラを破棄する
+	virtual ~GodStructure()
+	{
+		if (input != nullptr)
+			delete input;
 	}
 
 	void update()
@@ -124,11 +143,19 @@ public:
 		{
 			shiftTime = 0;
 		}
-		
 	}
+
+	InputController& controller() { return *input; }
+
+	const bool hasController() const { return input != nullptr; }
 
 	void save()
 	{
 		SaveJsonFile();
+	}
+
+	void initController()
+	{
+		input = new InputController(driver.getSelectedName());
 	}
 };

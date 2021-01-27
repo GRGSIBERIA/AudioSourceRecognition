@@ -19,15 +19,6 @@ void Main()
 
 	GodStructure god;
 
-	if (s3d::FileSystem::Exists(U"./settings.cfg"))
-	{
-
-	}
-	else
-	{
-		
-	}
-
 	while (System::Update())
 	{
 		transition(god);

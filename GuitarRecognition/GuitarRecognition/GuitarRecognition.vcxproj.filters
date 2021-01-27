@@ -427,5 +427,8 @@
     <ClInclude Include="GodStructure.hpp">
       <Filter>Header Files\Interface</Filter>
     </ClInclude>
+    <ClInclude Include="InputController.hpp">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

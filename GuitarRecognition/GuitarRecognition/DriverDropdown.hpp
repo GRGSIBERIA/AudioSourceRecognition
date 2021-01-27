@@ -17,7 +17,7 @@ public:
 		const auto drivers = asio::Registry::GetAsioDriverPathes();
 		for (int i = 0; i < drivers.Count(); ++i)
 		{
-			String driverName = Unicode::FromWString(drivers.Items(i).driverName);
+			const String driverName = Unicode::FromWString(drivers.Items(i).driverName);
 			list.emplace_back(driverName);
 		}
 	}

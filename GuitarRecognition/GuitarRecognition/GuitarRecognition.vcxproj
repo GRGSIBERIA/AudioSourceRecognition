@@ -236,6 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GodStructure.hpp" />
+    <ClInclude Include="InputController.hpp" />
     <ClInclude Include="State.hpp" />
     <ClInclude Include="TinyASIO\Buffer.hpp" />
     <ClInclude Include="TinyASIO\Channel.hpp" />
