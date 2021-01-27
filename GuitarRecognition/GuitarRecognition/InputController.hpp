@@ -8,8 +8,6 @@ class InputController : public asio::ControllerBase
 {
 	static asio::InputBuffer* input;
 
-	const int bufferSize() const { return input->SampleSize() * SampleRate() * timeLength; }
-
 	/**
 	* Stream内部に蓄積されるので適当なフレームでFetchする
 	*/
@@ -18,15 +16,19 @@ class InputController : public asio::ControllerBase
 		void* buffer = GetInputMemory(0, index);
 
 		Input(0).Store(buffer, bufferLength);
+
+		// ダブルバッファから呼び出して、中身をストリームに蓄積する
 	}
 
 	Array<String> list;
 	size_t selector = 0;
 	int timeLength;
+	int reservedBufferSize;
+	std::vector<asio::SampleType> superBuffer;
 
 public:
 	InputController(const String& driverName)
-		: ControllerBase(driverName.narrow()), list()
+		: ControllerBase(driverName.narrow()), list(), superBuffer()
 	{
 		for (int i = 0; i < channelManager->NumberOfInputs(); ++i)
 		{
@@ -72,6 +74,12 @@ public:
 		if (channel == nullptr)
 			return false;
 
+		// カプセル化したバッファを初期化する
+		this->timeLength = timeLength;
+		reservedBufferSize = sizeof(asio::SampleType) * sampleRate * timeLength;
+		superBuffer.reserve(sampleRate * timeLength);
+		superBuffer.resize(sampleRate * timeLength, 0);
+
 		this->Start();
 		return true;
 	}
@@ -98,6 +106,17 @@ public:
 			}
 		}
 		return false;
+	}
+
+	void update()
+	{
+		const auto ptr = input->Fetch();
+		const auto val = ptr.get();
+		const auto len = ptr.get()->size();
+
+		superBuffer.assign(superBuffer.begin() + len, superBuffer.end());
+		superBuffer.insert(superBuffer.end(), val->begin(), val->end());
+		// バッファを前に詰めて、後ろにストリームの内容を詰める
 	}
 };
 
