@@ -113,9 +113,30 @@ public:
 		const auto ptr = input->Fetch();
 		const auto val = ptr.get();
 		const auto len = ptr.get()->size();
+		const auto size = len * sizeof(asio::ASIOSampleType);
 
-		superBuffer.assign(superBuffer.begin() + len, superBuffer.end());
-		superBuffer.insert(superBuffer.end(), val->begin(), val->end());
+		//superBuffer.assign(superBuffer.begin() + len, superBuffer.end());
+		//superBuffer.erase(superBuffer.begin(), superBuffer.begin() + len);
+		//std::copy(superBuffer.begin() + len, superBuffer.end(), superBuffer.begin());
+		//superBuffer.insert(superBuffer.end(), val->begin(), val->end());
+		
+		// std::copyでコピーした場合、倍ぐらい時間がかかる
+		//std::copy(superBuffer.begin() + len, superBuffer.end(), superBuffer.begin());
+		//std::copy(val->begin(), val->end(), superBuffer.end() - len);
+
+		memmove_s(
+			(void*)&superBuffer[0], // dest
+			superBuffer.size() * sizeof(asio::ASIOSampleType), // dest size
+			(void*)superBuffer[len], // source
+			superBuffer.size() * sizeof(asio::ASIOSampleType) - size // move length
+		);
+		memmove_s(
+			(void*)&superBuffer[superBuffer.size() - len],	// dest
+			size,	// dest size
+			(void*)&val[0],		// source
+			size	// source size
+		);
+
 		// バッファを前に詰めて、後ろにストリームの内容を詰める
 	}
 };
