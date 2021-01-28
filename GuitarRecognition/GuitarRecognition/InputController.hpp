@@ -4,6 +4,8 @@
 #include "TinyASIO/TinyASIO.hpp"
 #include <memory>
 
+typedef std::vector<asio::SampleType> SampleArray;
+
 class InputController : public asio::ControllerBase
 {
 	static asio::InputBuffer* input;
@@ -24,7 +26,7 @@ class InputController : public asio::ControllerBase
 	size_t selector = 0;
 	int timeLength;
 	int reservedBufferSize;
-	std::vector<asio::SampleType> superBuffer;
+	SampleArray superBuffer;
 
 public:
 	InputController(const String& driverName)
@@ -139,6 +141,8 @@ public:
 
 		// バッファを前に詰めて、後ろにストリームの内容を詰める
 	}
+
+	const SampleArray& getArray() const { return superBuffer; }
 };
 
 asio::InputBuffer* InputController::input = nullptr;
