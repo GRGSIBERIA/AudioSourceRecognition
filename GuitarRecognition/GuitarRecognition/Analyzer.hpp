@@ -12,6 +12,27 @@ using OTFFT::simd_free;
 
 class Analyzer
 {
+	template <class T>
+	class SIMDAllocator : public std::allocator<T>
+	{
+	public:
+		SIMDAllocator() : std::allocator<T>() {}
+
+		template <class U>
+		SIMDAllocator(const SIMDAllocator<U>&) : std::allocator<T> {}
+
+		T* allocate(size_t n)
+		{
+			return reinterpret_cast<T*>(simd_malloc(sizeof(T) * n))
+		}
+
+		void deallocate(T* p, size_t n)
+		{
+			static_cast<void>(n);
+			simd_free(p);
+		}
+	};
+
 	std::vector<complex_t*> outputs;
 	std::vector<double*> results;
 	std::vector<std::vector<double>> resultCapsules;
