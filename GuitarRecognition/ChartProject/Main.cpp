@@ -5,15 +5,16 @@
 void Main()
 {
 	// 背景を水色にする
-	Scene::SetBackground(ColorF(0.8, 0.9, 1.0));
+	Scene::SetBackground(Palette::Black);
 
 	// 大きさ 60 のフォントを用意
 	const Font font(24);
 
-	Chart chart(font);
+	Chart chart(font, Vec2(400, 400), U"Spectrums", U"-> Hz", U"-> Power Spectrum Density");
 
 	while (System::Update())
 	{
-		
+		const auto frame = chart.draw({ 60, 60 });
+		frame.drawFrame();
 	}
 }
