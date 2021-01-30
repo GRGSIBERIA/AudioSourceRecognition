@@ -9,6 +9,41 @@ struct BoundingBox
 		: outline(outline), charting(charting) {}
 };
 
+struct ChartColoring
+{
+	ColorF frameColor = Palette::White;
+	ColorF bgColor = ColorF(0, 0, 0, 0);
+	ColorF fontColor = Palette::White;
+};
+
+struct Limit
+{
+	const bool hasLimit = false;
+	const double maxlim = 0.0;
+	const double minlim = 0.0;
+
+	Limit() {}
+
+	Limit(const double min, const double max)
+		: hasLimit(true), maxlim(max), minlim(min) {}
+};
+
+template <class T>
+struct PlotSetting
+{
+	/* 描画対象 */
+	const T const * plotTarget;
+
+	/* 描画する数 */
+	const size_t count;
+
+	/* 1個のデータが使う横幅 */
+	const double plotDelta;
+
+	PlotSetting(const T const * target, const size_t count, const double chartWidth)
+		: plotTarget(target), count(count), plotDelta(chartWidth / count) {}
+};
+
 class Chart
 {
 	const Font& font;
@@ -25,6 +60,14 @@ class Chart
 	Image titleimg;
 	Image ximg;
 	Image yimg;
+
+	ChartColoring color;
+	Limit xlim;
+	Limit ylim;
+
+	bool isDrawOutlineFrame = true;
+	bool isDrawChartingFrame = true;
+	bool hasBackground = false;
 
 public:
 	void setTitle(const String& text)
@@ -73,36 +116,41 @@ public:
 	{
 		region.pos = pos;	// regionに描画位置をセットする
 
-		const RectF treg = titletex.drawAt(region.topCenter());
-		const RectF yreg = ytex.rotated(-90_deg).drawAt(region.leftCenter()).asPolygon().boundingRect();
-		const RectF xreg = xtex.drawAt(region.bottomCenter());
+		const RectF treg = titletex.drawAt(region.topCenter(), color.fontColor);
+		const RectF yreg = ytex.rotated(-90_deg).drawAt(region.leftCenter(), color.fontColor).asPolygon().boundingRect();
+		const RectF xreg = xtex.drawAt(region.bottomCenter(), color.fontColor);
 
 		region.drawFrame();
 
-		const BoundingBox bounding(
-			RectF(
-				Vec2{
-					yreg.leftCenter().x,
-					treg.topCenter().y
-				},
-				Vec2{
-					region.rightCenter().x - yreg.leftCenter().x,
-					xreg.bottomCenter().y - treg.topCenter().y
-				}
-			),
-			RectF(
-				Vec2{
-					yreg.rightCenter().x + padding,
-					treg.bottomCenter().y + padding
-				},
-				Vec2{
-					(region.rightCenter().x - padding) - (yreg.rightCenter().x + padding),
-					(xreg.topCenter().y - padding) - (treg.bottomCenter().y + padding)
-				}
-			)
+		const auto outline = RectF(
+			Vec2{
+				yreg.leftCenter().x,
+				treg.topCenter().y
+			},
+			Vec2{
+				region.rightCenter().x - yreg.leftCenter().x,
+				xreg.bottomCenter().y - treg.topCenter().y
+			}
 		);
 
-		return bounding;
+		const auto chartline = RectF(
+			Vec2{
+				yreg.rightCenter().x + padding,
+				treg.bottomCenter().y + padding
+			},
+			Vec2{
+				(region.rightCenter().x - padding) - (yreg.rightCenter().x + padding),
+				(xreg.topCenter().y - padding) - (treg.bottomCenter().y + padding)
+			}
+		);
+
+		if (isDrawOutlineFrame)
+			outline.drawFrame(1, color.frameColor);
+
+		if (isDrawChartingFrame)
+			chartline.drawFrame(1, color.frameColor);
+
+		return BoundingBox(outline, chartline);;
 	}
 
 };
