@@ -19,31 +19,62 @@ struct ChartColoring
 struct Limit
 {
 	const bool hasLimit = false;
+	const Font& font;
 	const double maxlim = 0.0;
 	const double minlim = 0.0;
 
-	Limit() {}
+	Limit() : font(Font(16)) {}
 
-	Limit(const double min, const double max)
-		: hasLimit(true), maxlim(max), minlim(min) {}
+	Limit(const Font& font, const double min, const double max)
+		: hasLimit(true), maxlim(max), minlim(min), font(font) {}
 };
 
 template <class T>
 struct PlotSetting
 {
 	/* 描画対象 */
-	const T const * plotTarget;
+	const T const * plotTarget = nullptr;
 
 	/* 描画する数 */
-	const size_t count;
+	const size_t count = 0;
 
 	/* 1個のデータが使う横幅 */
 	const double plotDelta;
 
 	PlotSetting(const T const * target, const size_t count, const double chartWidth)
 		: plotTarget(target), count(count), plotDelta(chartWidth / count) {}
+
+	PlotSetting()
+		: plotDelta(0) {}
+
+	/**
+	 * 最大値を返す
+	 * @returns 最大値
+	 */
+	const T max() const
+	{
+		size_t maxid = 0;
+		for (size_t i = 1; i < count; ++i)
+			if (plotTarget[maxid] < plotTarget[i])
+				maxid = i;
+		return plotTarget[maxid];
+	}
+
+	/**
+	 * 最小値を返す
+	 * @returns 最小値
+	 */
+	const T min() const
+	{
+		size_t minid = 0;
+		for (size_t i = 1; i < count; ++i)
+			if (plotTarget[minid] > plotTarget[i])
+				minid = i;
+		return plotTarget[minid];
+	}
 };
 
+template <class T>
 class Chart
 {
 	const Font& font;
@@ -64,6 +95,7 @@ class Chart
 	ChartColoring color;
 	Limit xlim;
 	Limit ylim;
+	PlotSetting<T> plotProperty;
 
 	bool isDrawOutlineFrame = true;
 	bool isDrawChartingFrame = true;
@@ -112,6 +144,33 @@ public:
 		setYLabel(ylabel);
 	}
 
+	virtual ~Chart()
+	{
+		
+	}
+
+public:
+	void plot(const Array<T> data)
+	{
+		plotProperty = PlotSetting<T>(&data[0], data.size(), region.w);
+	}
+
+private:
+	void drawPlotLine(const RectF& chartline)
+	{
+		if (plotProperty.plotTarget == nullptr) return;
+
+		const T min = plotProperty->min();
+		const T max = plotProperty->max();
+
+		for (size_t i = 0; i < plotProperty.count; ++i)
+		{
+
+		}
+	}
+
+
+public:
 	const BoundingBox draw(const Vec2& pos = { 0, 0 }, const double padding = 8)
 	{
 		region.pos = pos;	// regionに描画位置をセットする
@@ -144,11 +203,16 @@ public:
 			}
 		);
 
+		
+
 		if (isDrawOutlineFrame)
 			outline.drawFrame(1, color.frameColor);
 
 		if (isDrawChartingFrame)
 			chartline.drawFrame(1, color.frameColor);
+
+		if (hasBackground)
+			chartline.draw(color.bgColor);
 
 		return BoundingBox(outline, chartline);;
 	}
