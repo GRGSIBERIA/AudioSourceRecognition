@@ -1,6 +1,13 @@
 ﻿#include <Siv3D.hpp>
 
+struct BoundingBox
+{
+	const RectF outline;
+	const RectF charting;
 
+	BoundingBox(const RectF& outline, const RectF& charting)
+		: outline(outline), charting(charting) {}
+};
 
 class Chart
 {
@@ -62,10 +69,8 @@ public:
 		setYLabel(ylabel);
 	}
 
-	const RectF draw(const Vec2& pos = { 0, 0 })
+	const BoundingBox draw(const Vec2& pos = { 0, 0 }, const double padding = 8)
 	{
-		RectF outline;
-
 		region.pos = pos;	// regionに描画位置をセットする
 
 		const RectF treg = titletex.drawAt(region.topCenter());
@@ -74,16 +79,30 @@ public:
 
 		region.drawFrame();
 
-		return RectF(
-			Vec2{
-				yreg.leftCenter().x, 
-				treg.topCenter().y
-			},
-			Vec2{
-				region.rightCenter().x - yreg.leftCenter().x,
-				xreg.bottomCenter().y - treg.topCenter().y
-			}
+		const BoundingBox bounding(
+			RectF(
+				Vec2{
+					yreg.leftCenter().x,
+					treg.topCenter().y
+				},
+				Vec2{
+					region.rightCenter().x - yreg.leftCenter().x,
+					xreg.bottomCenter().y - treg.topCenter().y
+				}
+			),
+			RectF(
+				Vec2{
+					yreg.rightCenter().x + padding,
+					treg.bottomCenter().y + padding
+				},
+				Vec2{
+					(region.rightCenter().x - padding) - (yreg.rightCenter().x + padding),
+					(xreg.topCenter().y - padding) - (treg.bottomCenter().y + padding)
+				}
+			)
 		);
+
+		return bounding;
 	}
 
 };
