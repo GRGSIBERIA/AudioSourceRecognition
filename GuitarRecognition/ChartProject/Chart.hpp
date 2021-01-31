@@ -107,6 +107,9 @@ public:
 
 private:
 
+	/**
+	 * 最大値と最小値を格納するための構造体
+	 */
 	struct MinMax
 	{
 	public:
@@ -165,7 +168,15 @@ private:
 
 	void drawAxisLine(const RectF& chartline, const MinMax& mm)
 	{
+		const auto xaxis = Line(
+			chartline.tl(), chartline.bl()
+		);
+		const auto yaxis = Line(
+			chartline.bl(), chartline.br()
+		);
 
+		xaxis.draw(color.axisColor);
+		yaxis.draw(color.axisColor);
 	}
 
 public:
