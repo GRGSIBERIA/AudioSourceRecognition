@@ -66,6 +66,7 @@ if __name__ == "__main__":
         times_x = np.arange(0, len(buffer) * dt, dt)
         waveform_line.set_xdata(times_x)
         waveform_line.set_ydata(buffer)
+        waveform_area.set_xlim(0, len(buffer) * dt)
 
         fig.tight_layout()
         fig.canvas.draw()
