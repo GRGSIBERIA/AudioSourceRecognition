@@ -11,6 +11,7 @@ struct BoundingBox
 
 struct ChartColoring
 {
+	ColorF axisColor = Palette::White;
 	ColorF frameColor = Palette::White;
 	ColorF bgColor = ColorF(0, 0, 0, 0);
 	ColorF fontColor = Palette::White;
@@ -53,6 +54,7 @@ class Chart
 
 	bool isDrawOutlineFrame = true;
 	bool isDrawChartingFrame = true;
+	bool isDrawAxisLine = true;
 	bool hasBackground = false;
 
 public:
@@ -104,22 +106,51 @@ public:
 	}
 
 private:
-	
-	void drawPlotLine(Array<WaveSampleS16>& data, const RectF& chartline)
+
+	struct MinMax
 	{
-		double min = 0.0, max = 0.0;
+	public:
+		static const double searchMin(const Array<WaveSampleS16>& data)
+		{
+			double min = 0.0;
+			for (int i = 1; i < data.size(); ++i)
+				if ((double)((data[i].left + data[i].right) >> 1) < min)
+					min = (double)((data[i].left + data[i].right) >> 1);
+			return min;
+		}
 
-		for (int i = 1; i < data.size(); ++i)
-			if ((double)((data[i].left + data[i].right) >> 1) < min)
-				min = (double)((data[i].left + data[i].right) >> 1);
+		static const double searchMax(const Array<WaveSampleS16>& data)
+		{
+			double max = 0.0;
+			for (int i = 1; i < data.size(); ++i)
+				if ((double)((data[i].left + data[i].right) >> 1) > max)
+					max = (double)((data[i].left + data[i].right) >> 1);
+			return max;
+		}
 
-		for (int i = 1; i < data.size(); ++i)
-			if ((double)((data[i].left + data[i].right) >> 1) > max)
-				max = (double)((data[i].left + data[i].right) >> 1);
+	public:
 
+		const double min = 0.0;
+		const double max = 0.0;
+
+		MinMax(const double min, const double max)
+			: min(min), max(max) {}
+
+		MinMax() {}
+
+		MinMax(const Array<WaveSampleS16>& data)
+			: min(searchMin(data)), max(searchMax(data)) {}
+
+		MinMax(const Array<T>& data)
+			: min(std::min(data)), max(std::max(data)) {}
+	};
+	
+	void drawPlotLine(const Array<WaveSampleS16>& data, const RectF& chartline, const MinMax& mm)
+	{
 		const double dx = chartline.w / data.size();
-		const double dy = 1.0 / (max - min);
+		const double dy = 1.0 / (mm.max - mm.min);
 
+#pragma omp parallel for
 		for (size_t i = 1; i < data.size(); ++i)
 		{
 			const double da = (double)((data[i - 1].left + data[i - 1].right) >> 1);
@@ -132,18 +163,25 @@ private:
 		}
 	}
 
+	void drawAxisLine(const RectF& chartline, const MinMax& mm)
+	{
+
+	}
 
 public:
-	const BoundingBox draw(Array<T>& data, const Vec2& pos = { 0, 0 }, const double padding = 8)
+	const BoundingBox draw(const Array<T>& data, const Vec2& pos = { 0, 0 }, const double padding = 8)
 	{
 		region.pos = pos;	// regionに描画位置をセットする
+
+		const MinMax mm(data);
 
 		const RectF treg = titletex.drawAt(region.topCenter(), color.fontColor);
 		const RectF yreg = ytex.rotated(-90_deg).drawAt(region.leftCenter(), color.fontColor).asPolygon().boundingRect();
 		const RectF xreg = xtex.drawAt(region.bottomCenter(), color.fontColor);
 
-		region.drawFrame();
+		// region.drawFrame(); // 文字を中心線とする領域
 
+		/* アウトラインの生成 */
 		const auto outline = RectF(
 			Vec2{
 				yreg.leftCenter().x,
@@ -155,6 +193,7 @@ public:
 			}
 		);
 
+		/* チャートラインの生成 */
 		const auto chartline = RectF(
 			Vec2{
 				yreg.rightCenter().x + padding,
@@ -166,7 +205,10 @@ public:
 			}
 		);
 
-		drawPlotLine(data, chartline);
+		drawPlotLine(data, chartline, mm);
+
+		if (isDrawAxisLine)
+			drawAxisLine(chartline, mm);
 
 		if (isDrawOutlineFrame)
 			outline.drawFrame(1, color.frameColor);

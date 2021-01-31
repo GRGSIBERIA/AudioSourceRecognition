@@ -74,3 +74,5 @@ GuitarRecognition/GuitarRecognition/App/GuitarRecognition(debug)_log.html
 *.exe
 GuitarRecognition/ChartProject/App/AS_DEBUG/stats.txt
 GuitarRecognition/ChartProject/App/ChartProject(debug)_log.html
+*.iobj
+*.ipdb
