@@ -2,6 +2,8 @@
 import pyaudio
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy import fftpack
+from scipy import signal
 
         
 def handle_close(event):
@@ -11,17 +13,19 @@ if __name__ == "__main__":
     ################################################################################
     # ready to device driver
     ################################################################################
-    chunk = 4096
+    chunk = 32768
     format = pyaudio.paFloat32
     channels = 1
     fs = 192000
     record_seconds = 60 * 60 # 1 hour
-    
+    window = signal.hanning(chunk)
+
     p = pyaudio.PyAudio()
 
     for index in range(0, p.get_device_count()):
         info = p.get_device_info_by_index(index)
-        print("{:>3d} {}".format(info['index'], info['name']))
+        if info['maxInputChannels'] > 0:
+            print("{:>3d} {}".format(info['index'], info['name']))
     
     number_str = input("Please, an input text for default device > ").rstrip()
     number = int(number_str)
@@ -58,15 +62,30 @@ if __name__ == "__main__":
     fourier_area.set_title("fourier transform")
     fourier_area.set_xlabel("frequency [Hz]")
     fourier_area.set_ylabel("power spectrum dencity")
+    fourier_line, = fourier_area.plot(x, y)
+    fourier_area.set_xlim(0, fs/2)
+    #fourier_area.set_xlim(0, 5000)
+    fourier_area.set_ylim(-160, 20)
 
     while stream.is_active() and not fig.canvas.has_been_closed:
-        buffer = np.frombuffer(stream.read(chunk), dtype="f4")
+        buffer = np.frombuffer(stream.read(chunk), dtype="f4") * window
+        
 
         dt = 1.0 / float(fs)
-        times_x = np.arange(0, len(buffer) * dt, dt)
+        n = len(buffer)
+
+        times_x = np.arange(0, n * dt, dt)
         waveform_line.set_xdata(times_x)
         waveform_line.set_ydata(buffer)
-        waveform_area.set_xlim(0, len(buffer) * dt)
+        waveform_area.set_xlim(0, n * dt)
+
+
+        yf = np.abs(fftpack.rfft(buffer) / (n * 0.5)).real
+        freq = fftpack.fftfreq(n, dt)
+        db = np.log10(yf) * 10.
+        
+        fourier_line.set_xdata(freq)
+        fourier_line.set_ydata(db)
 
         fig.tight_layout()
         fig.canvas.draw()
