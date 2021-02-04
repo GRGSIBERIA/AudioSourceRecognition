@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import fftpack
 from scipy import signal
+from scipy import integrate
 
         
 def handle_close(event):
@@ -47,8 +48,9 @@ if __name__ == "__main__":
     fig.canvas.mpl_connect("close_event", handle_close)
     fig.canvas.has_been_closed = False
 
-    waveform_area = plt.subplot(2, 1, 1)
-    fourier_area = plt.subplot(2, 1, 2)
+    waveform_area = plt.subplot(3, 1, 1)
+    fourier_area = plt.subplot(3, 1, 2)
+    diff_area = plt.subplot(3, 1, 3)
     plt.subplots_adjust(wspace=0.5, hspace=0.5)
 
     x = np.linspace(0, 10, 100)
@@ -63,14 +65,18 @@ if __name__ == "__main__":
     fourier_area.set_xlabel("frequency [Hz]")
     fourier_area.set_ylabel("power spectrum dencity")
     fourier_line, = fourier_area.plot(x, y)
-    fourier_area.set_xlim(0, fs/2)
-    #fourier_area.set_xlim(0, 5000)
-    fourier_area.set_ylim(-160, 20)
+    #fourier_area.set_xlim(0, fs/2)
+    fourier_area.set_xlim(0, 5000)
+    fourier_area.set_ylim(-100, 0)
+
+    diff_area.set_title("waveform difference")
+    diff_area.set_xlabel("time [sec]")
+    diff_area.set_ylabel("relative position")
+    diff_line, = diff_area.plot(x, y)
 
     while stream.is_active() and not fig.canvas.has_been_closed:
-        buffer = np.frombuffer(stream.read(chunk), dtype="f4") * window
+        buffer = np.frombuffer(stream.read(chunk), dtype="f4") # * window
         
-
         dt = 1.0 / float(fs)
         n = len(buffer)
 
@@ -78,7 +84,16 @@ if __name__ == "__main__":
         waveform_line.set_xdata(times_x)
         waveform_line.set_ydata(buffer)
         waveform_area.set_xlim(0, n * dt)
+        waveform_area.set_ylim(np.min(buffer), np.max(buffer))
 
+        integration_y = np.array(buffer)
+        for i, _ in enumerate(integration_y):
+            integration_y[i] = 0.5 * integration_y[i]**2.
+        
+        diff_line.set_ydata(integration_y)
+        diff_line.set_xdata(times_x)
+        diff_area.set_xlim(0, n * dt)
+        diff_area.set_ylim(np.min(integration_y), np.max(integration_y))
 
         yf = np.abs(fftpack.rfft(buffer) / (n * 0.5)).real
         freq = fftpack.fftfreq(n, dt)
