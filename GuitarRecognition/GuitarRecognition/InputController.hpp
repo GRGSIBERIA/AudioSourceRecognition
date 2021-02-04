@@ -4,11 +4,11 @@
 #include "TinyASIO/TinyASIO.hpp"
 #include <memory>
 
+typedef std::vector<asio::SampleType> SampleArray;
+
 class InputController : public asio::ControllerBase
 {
 	static asio::InputBuffer* input;
-
-	const int bufferSize() const { return input->SampleSize() * SampleRate() * timeLength; }
 
 	/**
 	* Stream内部に蓄積されるので適当なフレームでFetchする
@@ -18,15 +18,19 @@ class InputController : public asio::ControllerBase
 		void* buffer = GetInputMemory(0, index);
 
 		Input(0).Store(buffer, bufferLength);
+
+		// ダブルバッファから呼び出して、中身をストリームに蓄積する
 	}
 
 	Array<String> list;
 	size_t selector = 0;
 	int timeLength;
+	int reservedBufferSize;
+	SampleArray superBuffer;
 
 public:
 	InputController(const String& driverName)
-		: ControllerBase(driverName.narrow()), list()
+		: ControllerBase(driverName.narrow()), list(), superBuffer()
 	{
 		for (int i = 0; i < channelManager->NumberOfInputs(); ++i)
 		{
@@ -72,6 +76,12 @@ public:
 		if (channel == nullptr)
 			return false;
 
+		// カプセル化したバッファを初期化する
+		this->timeLength = timeLength;
+		reservedBufferSize = sizeof(asio::SampleType) * sampleRate * timeLength;
+		superBuffer.reserve(sampleRate * timeLength);
+		superBuffer.resize(sampleRate * timeLength, 0);
+
 		this->Start();
 		return true;
 	}
@@ -99,6 +109,40 @@ public:
 		}
 		return false;
 	}
+
+	void update()
+	{
+		const auto ptr = input->Fetch();
+		const auto val = ptr.get();
+		const auto len = ptr.get()->size();
+		const auto size = len * sizeof(asio::ASIOSampleType);
+
+		//superBuffer.assign(superBuffer.begin() + len, superBuffer.end());
+		//superBuffer.erase(superBuffer.begin(), superBuffer.begin() + len);
+		//std::copy(superBuffer.begin() + len, superBuffer.end(), superBuffer.begin());
+		//superBuffer.insert(superBuffer.end(), val->begin(), val->end());
+		
+		// std::copyでコピーした場合、倍ぐらい時間がかかる
+		//std::copy(superBuffer.begin() + len, superBuffer.end(), superBuffer.begin());
+		//std::copy(val->begin(), val->end(), superBuffer.end() - len);
+
+		memmove_s(
+			(void*)&superBuffer[0], // dest
+			superBuffer.size() * sizeof(asio::ASIOSampleType), // dest size
+			(void*)superBuffer[len], // source
+			superBuffer.size() * sizeof(asio::ASIOSampleType) - size // move length
+		);
+		memmove_s(
+			(void*)&superBuffer[superBuffer.size() - len],	// dest
+			size,	// dest size
+			(void*)&val[0],		// source
+			size	// source size
+		);
+
+		// バッファを前に詰めて、後ろにストリームの内容を詰める
+	}
+
+	const SampleArray& getArray() const { return superBuffer; }
 };
 
 asio::InputBuffer* InputController::input = nullptr;

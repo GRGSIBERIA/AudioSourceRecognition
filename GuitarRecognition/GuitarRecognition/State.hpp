@@ -102,6 +102,7 @@ void transition(GodStructure& god)
 		break;
 
 	case State::Analyze:
+		god.controller().update();
 		break;
 
 	default:
