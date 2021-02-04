@@ -1,8 +1,0 @@
-﻿{
-  "God": {
-    "SamplingFrequency": 48000,
-    "Madohaba": 16384,
-    "ShiftTime": 4,
-    "SelectedDriverName": "Studio USB ASIO Driver"
-  }
-}
