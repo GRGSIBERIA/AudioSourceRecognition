@@ -86,14 +86,15 @@ if __name__ == "__main__":
         waveform_area.set_xlim(0, n * dt)
         waveform_area.set_ylim(np.min(buffer), np.max(buffer))
 
-        integration_y = np.array(buffer)
-        for i, _ in enumerate(integration_y):
-            integration_y[i] = 0.5 * integration_y[i]**2.
+        diff_y = np.zeros(len(buffer))
+        for i, _ in enumerate(buffer[1:]):
+            diff_y[i] += diff_y[i - 1] + buffer[i] * dt
         
-        diff_line.set_ydata(integration_y)
+        diff_line.set_ydata(diff_y)
         diff_line.set_xdata(times_x)
         diff_area.set_xlim(0, n * dt)
-        diff_area.set_ylim(np.min(integration_y), np.max(integration_y))
+        diff_area.set_xlim(0, 0.04)
+        diff_area.set_ylim(np.min(diff_y), np.max(diff_y))
 
         yf = np.abs(fftpack.rfft(buffer) / (n * 0.5)).real
         freq = fftpack.fftfreq(n, dt)
