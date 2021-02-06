@@ -8,7 +8,22 @@ from scipy import integrate
 
         
 def handle_close(event):
+    """閉じるボタンが押下されたときの処理
+
+    Args:
+        event ([type]): ボタンイベント
+    """
     event.canvas.has_been_closed = True
+
+def handle_click_wave(event):
+    """キャンバスをクリックしたときのイベント処理
+
+    Args:
+        event ([type]): ボタンイベント,
+    """
+    print(event)
+
+
 
 if __name__ == "__main__":
     ################################################################################
@@ -46,6 +61,7 @@ if __name__ == "__main__":
     plt.ion()
     fig = plt.figure(figsize=(8, 8))
     fig.canvas.mpl_connect("close_event", handle_close)
+    fig.canvas.mpl_connect("button_press_event", handle_click_wave)
     fig.canvas.has_been_closed = False
 
     waveform_area = plt.subplot(3, 1, 1)
@@ -93,7 +109,7 @@ if __name__ == "__main__":
         diff_line.set_ydata(diff_y)
         diff_line.set_xdata(times_x)
         diff_area.set_xlim(0, n * dt)
-        diff_area.set_xlim(0, 0.04)
+        #diff_area.set_xlim(0, 0.04)
         diff_area.set_ylim(np.min(diff_y), np.max(diff_y))
 
         yf = np.abs(fftpack.rfft(buffer) / (n * 0.5)).real
